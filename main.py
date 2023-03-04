@@ -2,6 +2,9 @@ import sys, pygame
 import time, random
 import pygame.gfxdraw
 
+import numpy as np
+import cv2
+
 BACKGROUND_COLOR = (46, 52, 64)
 
 TILE_BLOCK_SIZE = 25
@@ -15,6 +18,7 @@ TILE_BORDER_RADIUS = 1
 EXIT_DOOR_WIDTH = 25
 EXIT_DOOR_HEIGHT = 50
 EXIT_DOOR_BG_COLOR = 255, 255, 255
+EXIT_DOOR_FRAME_BG_COLOR = 25, 25, 25
 
 BLOCK_SIZE = 10
 SCREEN_WIDTH = 800
@@ -29,15 +33,28 @@ BOXING_DECREMENT = 3.5
 DEATH_LINE_HEIGHT = SCREEN_HEIGHT * 1.25
 BOUNCER_V_SPEED = 10.2
 
+BITS_SPEED_RANGE = (-5, 5)
+BITS_GRAVITY_DOWN = 0.15
+BITS_COLOR = (3, 79, 132)
+BITS_SIZE = (3,3)
+
 BOUNCER_COLOR = (3, 79, 132)
 BOUNCER_BORDER_COLOR = (25, 25, 25)
 
+MOVING_PLATFORM_H_SPEED = 1.5
 
 NUM_OF_TILES_PER_ROW = SCREEN_WIDTH / TILE_BLOCK_SIZE
 NUM_OF_TILE_ROWS =  SCREEN_HEIGHT / TILE_BLOCK_SIZE
 
 FPS = 30
 fpsClock = pygame.time.Clock()
+
+screenBuffer = pygame.surface.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+
+class Colors:
+    WHITE_ISH = (246, 246, 246)
+    YELLOW_ISH = (214, 198, 136)
+    RED_ISH = (156, 60, 60)
 
 class Utils:
 
@@ -62,6 +79,26 @@ class Utils:
         elif previousCenterPosition[1] - radius > sourceRect.y + sourceRect.height:
             return 'bottom'
 
+    def create_neon(surf):
+        surf_alpha = surf.convert_alpha()
+        rgb = pygame.surfarray.array3d(surf_alpha)
+        alpha = pygame.surfarray.array_alpha(surf_alpha).reshape((*rgb.shape[:2], 1))
+        image = np.concatenate((rgb, alpha), 2)
+        cv2.GaussianBlur(image, ksize=(9, 9), sigmaX=10, sigmaY=10, dst=image)
+        cv2.blur(image, ksize=(5, 5), dst=image)
+        bloom_surf = pygame.image.frombuffer(image.flatten(), image.shape[1::-1], 'RGBA')
+        return bloom_surf
+
+    def dropShadowText(buffer, text, size, x, y, colour=(255,255,255), drop_colour=(128,128,128), font=None):
+        # how much 'shadow distance' is best?
+        dropshadow_offset = 1 + (size // 15)
+        text_font = pygame.font.Font(font, size)
+        # make the drop-shadow
+        text_bitmap = text_font.render(text, True, drop_colour)
+        buffer.blit(text_bitmap, (x+dropshadow_offset, y+dropshadow_offset) )
+        # make the overlay text
+        text_bitmap = text_font.render(text, True, colour)
+        buffer.blit(text_bitmap, (x, y) )
 
 class Sound:
 
@@ -72,6 +109,7 @@ class Sound:
 
         Sound.SND_MAIN_MUSIC = pygame.mixer.Sound("main-music.mp3")
         Sound.SND_INTRO_TELEPORT = pygame.mixer.Sound("intro-teleport.mp3")
+        Sound.SND_DEATH_SOUND = pygame.mixer.Sound("death-sound.mp3")
 
     @staticmethod
     def playIntroTeleport():
@@ -79,18 +117,62 @@ class Sound:
         pygame.mixer.music.stop()
 
     @staticmethod
+    def platDeathSound():
+        pygame.mixer.Sound.play(Sound.SND_DEATH_SOUND)
+        pygame.mixer.music.stop()
+
+
+    @staticmethod
     def playMainMusic():
         pygame.mixer.Sound.play(Sound.SND_MAIN_MUSIC)
         pygame.mixer.music.stop()
+
+class Controls:
+
+    @staticmethod
+    def key_pressed(keys):
+        bouncer = Bouncer.bouncer
+        if keys[pygame.K_LEFT]:
+            bouncer.direction = 'left'
+        elif keys[pygame.K_RIGHT]:
+            bouncer.direction = 'right'
+        else:
+            bouncer.direction = 'none'
+
+class Pixels:
+    def __init__(self, initialPos):
+        self.initialPos = initialPos
+        self.bits = []
+        for i in range(16):
+            xspeed = random.randint(BITS_SPEED_RANGE[0],BITS_SPEED_RANGE[1])
+            yspeed = random.randint(BITS_SPEED_RANGE[0], BITS_SPEED_RANGE[1])
+            self.bits.append([initialPos[0],initialPos[1], xspeed, yspeed])
+
+    def update(self):
+        for bit in self.bits:
+            bit[3] += BITS_GRAVITY_DOWN
+
+    @staticmethod
+    def CreatePixels(initialPos):
+        pixels = Pixels(initialPos)
+        try:
+            Pixels.pixelsList.append(pixels)
+        except Exception as e:
+            Pixels.pixelsList = []
+            Pixels.pixelsList.append(pixels)
 
 class Level:
     def __init__(self, filepath):
         self.loadFile(filepath)
 
     def loadFile(self, filepath):
+
         self.mapping = []
         f = open(filepath, "r")
         parseSector = ""
+
+        self.movingPlatformsPosition = []
+
         for line in f:
 
             line = line.replace("\n", "")
@@ -105,6 +187,8 @@ class Level:
                 parseSector = "exitdoor_position"
             elif line == "[next_map]":
                 parseSector = "next_map"
+            elif line == "[moving_platforms]":
+                parseSector = "moving_platforms"
 
             if line.find("[") != -1 and line.find("]") != -1:
                 continue
@@ -127,6 +211,39 @@ class Level:
             elif parseSector == "next_map":
                 self.nextLevel = line
 
+            elif parseSector == "moving_platforms":
+                dataTokens = line.split(",")
+                self.movingPlatformsPosition.append([int(dataTokens[0]), int(dataTokens[1])])
+
+class MovingPlatform:
+    def __init__(self, pos):
+        self.position = [pos[0], pos[1]]
+        self.width = TILE_BLOCK_SIZE
+        self.height = TILE_BLOCK_SIZE / 2
+        directions = ["left","right"]
+        self.hdirection = directions[random.randint(0,1)]
+
+    @staticmethod
+    def CreateMovingPlatforms():
+        MovingPlatform.platforms = []
+        platforms = MovingPlatform.platforms
+        movingPlatformPositions = Level.currentLevel.movingPlatformsPosition
+        for m in movingPlatformPositions:
+            platforms.append(MovingPlatform(m))
+
+    def isColliding(self, rect):
+        if self.position[0] + self.width >= rect.x and \
+            self.position[1] + self.height >= rect.y and \
+            self.position[0] <= rect.x + rect.width and \
+            self.position[1] <= rect.y + rect.height:
+            return True
+        return False
+
+    def update(self):
+        if self.hdirection == 'left':
+            self.position[0] -= MOVING_PLATFORM_H_SPEED
+        elif self.hdirection == 'right':
+            self.position[0] += MOVING_PLATFORM_H_SPEED
 
 class ExitDoor:
     def __init__(self, pos, width, height):
@@ -172,13 +289,13 @@ class Renderer:
 
     @staticmethod
     def __drawBackground():
-        screen.fill(BACKGROUND_COLOR)
+        screenBuffer.fill(BACKGROUND_COLOR)
 
     @staticmethod
     def __drawBouncer():
         bouncer = Bouncer.bouncer
-        pygame.draw.circle(screen, BOUNCER_COLOR, (int(bouncer.position[0]), int(bouncer.position[1])), bouncer.radius)
-        pygame.gfxdraw.circle(screen, int(bouncer.position[0]), int(bouncer.position[1]), bouncer.radius, BOUNCER_BORDER_COLOR)
+        pygame.draw.circle(screenBuffer, BOUNCER_COLOR, (int(bouncer.position[0]), int(bouncer.position[1])), bouncer.radius)
+        pygame.gfxdraw.circle(screenBuffer, int(bouncer.position[0]), int(bouncer.position[1]), bouncer.radius, BOUNCER_BORDER_COLOR)
 
     @staticmethod
     def __drawLevelTiles():
@@ -190,9 +307,15 @@ class Renderer:
                 if tile == 1:
                     tilerect = pygame.Rect((ci * TILE_BLOCK_SIZE, ri * TILE_BLOCK_SIZE),
                                            (TILE_BLOCK_SIZE, TILE_BLOCK_SIZE))
-                    pygame.draw.rect(screen, TILE_COLOR, tilerect)
-                    pygame.draw.rect(screen, TILE_BORDER_COLOR, tilerect, TILE_BORDER_WIDTH, TILE_BORDER_RADIUS)
-                    pygame.gfxdraw.rectangle(screen, tilerect, TILE_BORDER_COLOR)
+                    pygame.draw.rect(screenBuffer, TILE_COLOR, tilerect)
+                    pygame.draw.rect(screenBuffer, TILE_BORDER_COLOR, tilerect, TILE_BORDER_WIDTH, TILE_BORDER_RADIUS)
+                    pygame.gfxdraw.rectangle(screenBuffer, tilerect, TILE_BORDER_COLOR)
+                elif tile == 2:
+                    triangle = [(ci * TILE_BLOCK_SIZE, (ri + 1) * TILE_BLOCK_SIZE),
+                                ((ci + 1 / 2) * TILE_BLOCK_SIZE, ri * TILE_BLOCK_SIZE),
+                                ((ci + 1 ) * TILE_BLOCK_SIZE, (ri + 1) * TILE_BLOCK_SIZE)]
+                    pygame.draw.polygon(screenBuffer, (255, 255, 255), triangle)
+
                 ci += 1
             ri += 1
 
@@ -200,12 +323,43 @@ class Renderer:
     def __drawExitDoor():
         exitDoor = ExitDoor.exitDoor
         exitDoorRect = pygame.Rect((exitDoor.position[0], exitDoor.position[1]), (exitDoor.width, exitDoor.height))
-        pygame.draw.rect(screen, EXIT_DOOR_BG_COLOR, exitDoorRect)
+        pygame.draw.rect(screenBuffer, EXIT_DOOR_BG_COLOR, exitDoorRect)
 
+
+    @staticmethod
+    def __drawGlowExitDoor():
+        exitDoor = ExitDoor.exitDoor
+        image = pygame.Surface((95, 95), pygame.SRCALPHA)
+        pygame.draw.rect(image, (255, 255, 255), (10, 10, 60, 30))
+        neon_image = Utils.create_neon(image)
+        screenBuffer.blit(neon_image,
+                          neon_image.get_rect(center=(exitDoor.position[0]+exitDoor.width+10, exitDoor.position[1]+exitDoor.height/2+10)),
+                                              special_flags=pygame.BLEND_PREMULTIPLIED)
+    @staticmethod
+    def __drawExitDoorText():
+        exitDoor = ExitDoor.exitDoor
         font = pygame.font.SysFont(None, 24)
-        img = font.render('Exit', True, (255, 0, 0))
-        screen.blit(img, (exitDoor.position[0]-4, exitDoor.position[1]-15))
+        Utils.dropShadowText(screenBuffer, "Exit", 24, exitDoor.position[0]-4, exitDoor.position[1]-16, (255, 0, 0), (100, 0, 0))
 
+
+    @staticmethod
+    def __drawMovingPlatforms():
+        platforms = MovingPlatform.platforms
+        for platform in platforms:
+            exitDoorRect = pygame.Rect((platform.position[0], platform.position[1]), (platform.width, platform.height))
+            pygame.draw.rect(screenBuffer, (33, 37, 41), exitDoorRect)
+            pygame.draw.rect(screenBuffer, (255, 255, 255), exitDoorRect, 1, 1)
+
+    @staticmethod
+    def __drawPixels():
+        try:
+            pixelsList = Pixels.pixelsList
+            for pixels in pixelsList:
+                for bit in pixels.bits:
+                    pixelRect = pygame.Rect((bit[0], bit[1]), BITS_SIZE)
+                    pygame.draw.rect(screenBuffer, BITS_COLOR, pixelRect)
+        except Exception as e:
+            return None
 
     @staticmethod
     def draw():
@@ -213,7 +367,11 @@ class Renderer:
         Renderer.__drawBackground()
         Renderer.__drawExitDoor()
         Renderer.__drawBouncer()
+        Renderer.__drawGlowExitDoor()
+        Renderer.__drawExitDoorText()
         Renderer.__drawLevelTiles()
+        Renderer.__drawMovingPlatforms()
+        Renderer.__drawPixels()
 
 
 class GameWorld:
@@ -233,6 +391,8 @@ class GameWorld:
 
         bouncer.setPosition(Level.currentLevel.bouncerPosition)
 
+        MovingPlatform.CreateMovingPlatforms()
+
         Sound.playMainMusic()
         Sound.playIntroTeleport()
 
@@ -242,13 +402,51 @@ class GameWorld:
         bouncer.setPosition(Level.currentLevel.bouncerPosition)
         bouncer.speed = [0, 0]
         bouncer.direction = 'none'
+
+
+    @staticmethod
+    def onNextLevel():
         exitDoor = ExitDoor(Level.currentLevel.exitdoorPosition, EXIT_DOOR_WIDTH, EXIT_DOOR_HEIGHT)
         ExitDoor.exitDoor = exitDoor
-        Sound.playIntroTeleport()
+        MovingPlatform.CreateMovingPlatforms()
+
+    @staticmethod
+    def death():
+        Sound.platDeathSound()
+        GameWorld.reset()
+
+    @staticmethod
+    def deathExplode():
+        bouncer = Bouncer.bouncer
+        Pixels.CreatePixels(bouncer.position)
+        GameWorld.death()
 
     @staticmethod
     def quit():
         return None
+
+    @staticmethod
+    def __update_MovingPlatforms():
+        for platform in MovingPlatform.platforms:
+            platform.update()
+            cl = Level.currentLevel
+            ri = 0
+            for tileRow in cl.mapping:
+                ci = 0
+                for tile in tileRow:
+                    if tile == 1:
+                        tilerect = pygame.Rect((ci * TILE_BLOCK_SIZE, ri * TILE_BLOCK_SIZE),
+                                               (TILE_BLOCK_SIZE, TILE_BLOCK_SIZE))
+                        if platform.isColliding(tilerect):
+                            if platform.hdirection == 'left':
+                                platform.hdirection = 'right'
+                                platform.position[0] = tilerect.x + tilerect.width + 1
+                            elif platform.hdirection == 'right':
+                                platform.hdirection = 'left'
+                                platform.position[0] = tilerect.x - platform.width - 1
+                    ci += 1
+                ri += 1
+
 
     @staticmethod
     def __update_BouncerExitDoorCheck():
@@ -258,6 +456,7 @@ class GameWorld:
         if bouncer.isColliding(exitDoorRect):
             Level.currentLevel.loadFile(Level.currentLevel.nextLevel)
             GameWorld.reset()
+            GameWorld.onNextLevel()
 
     @staticmethod
     def __update_BouncerBoundariesCheck():
@@ -267,7 +466,7 @@ class GameWorld:
         elif bouncer.position[0] + bouncer.boxingRadius >= SCREEN_WIDTH:
             bouncer.position[0] = SCREEN_WIDTH - bouncer.boxingRadius
         elif bouncer.position[1] >= DEATH_LINE_HEIGHT:
-            GameWorld.reset()
+            GameWorld.death()
 
     @staticmethod
     def __update_BoucerCheckTiles():
@@ -277,10 +476,11 @@ class GameWorld:
         for tileRow in cl.mapping:
             ci = 0
             for tile in tileRow:
-                if tile == 1:
-                    tilerect = pygame.Rect((ci * TILE_BLOCK_SIZE, ri * TILE_BLOCK_SIZE),
-                                           (TILE_BLOCK_SIZE, TILE_BLOCK_SIZE))
-                    if bouncer.isColliding(tilerect):
+                tilerect = pygame.Rect((ci * TILE_BLOCK_SIZE, ri * TILE_BLOCK_SIZE),
+                                       (TILE_BLOCK_SIZE, TILE_BLOCK_SIZE))
+
+                if bouncer.isColliding(tilerect):
+                    if tile == 1:
                         ballDir = Utils.getBallDirection(tilerect, bouncer.previousPosition, bouncer.boxingRadius)
                         if ballDir == 'top':
                             bouncer.speed[1] = -BOUNCER_V_SPEED
@@ -292,9 +492,36 @@ class GameWorld:
                         elif ballDir == 'bottom':
                             bouncer.position[1] = ri * TILE_BLOCK_SIZE + TILE_BLOCK_SIZE + bouncer.boxingRadius + 1
                             bouncer.speed[1] = 0
+                    elif tile == 2:
+                        GameWorld.deathExplode()
                 ci += 1
             ri += 1
 
+    @staticmethod
+    def __update_BouncerMovingPlatforms():
+        bouncer = Bouncer.bouncer
+        for platform in MovingPlatform.platforms:
+            platformRect = pygame.Rect((platform.position[0],platform.position[1]), (platform.width, platform.height))
+            if bouncer.isColliding(platformRect):
+                bouncer.speed[1] = -BOUNCER_V_SPEED
+                bouncer.position[1] = platform.position[1] - bouncer.radius - 1
+
+
+    @staticmethod
+    def __update_Pixels():
+        try:
+            pixelsList = Pixels.pixelsList
+            for pixels in pixelsList:
+                for bit in pixels.bits:
+                    bit[0] += bit[2]
+                    bit[1] += bit[3]
+                    bit[3] += BITS_GRAVITY_DOWN
+                    if bit[1] > SCREEN_HEIGHT:
+                        pixels.bits.remove(bit)
+                        if len(pixels.bits) == 0:
+                            pixelsList.remove(pixels)
+        except Exception as e:
+            return None
 
     @staticmethod
     def update():
@@ -305,6 +532,9 @@ class GameWorld:
         GameWorld.__update_BouncerBoundariesCheck()
         GameWorld.__update_BouncerExitDoorCheck()
         GameWorld.__update_BoucerCheckTiles()
+        GameWorld.__update_MovingPlatforms()
+        GameWorld.__update_BouncerMovingPlatforms()
+        GameWorld.__update_Pixels()
 
 if __name__ == '__main__':
 
@@ -317,31 +547,20 @@ if __name__ == '__main__':
     screen = pygame.display.set_mode(size)
     pygame.display.set_caption("Bouncer")
 
-    bouncer = Bouncer.bouncer
-
-    prev_time = time.time()
-
-
     while True:
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
 
-
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT]:
-            bouncer.direction = 'left'
-        elif keys[pygame.K_RIGHT]:
-            bouncer.direction = 'right'
-        else:
-            bouncer.direction = 'none'
+        Controls.key_pressed(keys)
 
-
-        pygame.display.flip()
         GameWorld.update()
         Renderer.draw()
+        pygame.Surface.blit(screen, screenBuffer, (0,0))
+        pygame.display.flip()
 
         fpsClock.tick(FPS)
 
-        GameWorld.quit()
+    GameWorld.quit()
