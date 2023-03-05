@@ -114,52 +114,68 @@ class GameWorld:
 
     @staticmethod
     def __update_BoucerCheckTiles():
+
+        """
+            Get List of colliding tiles
+        """
         bouncer = Bouncer.bouncer
         cl = Level.currentLevel
-        ri = 0
-        for tileRow in cl.mapping:
-            ci = 0
-            for tile in tileRow:
 
-                # Omit Tile 0s
-                if not tile == 0:
+        collidingTilesList = []
 
-                    tilerect = pygame.Rect((ci * TILE_BLOCK_SIZE, ri * TILE_BLOCK_SIZE),
-                                           (TILE_BLOCK_SIZE, TILE_BLOCK_SIZE))
+        for ri in range(len(cl.mapping)):
+            for ci in range(len(cl.mapping[ri])):
 
-                    if bouncer.isColliding(tilerect):
+                tile = cl.mapping[ri][ci]
 
-                        ballDir = bouncer.getCollisionDirection(tilerect)
+                if tile == 0:
+                    continue
 
-                        if tile in TILES_WITH_COLLISIONS:
+                tilerect = pygame.Rect((ci * TILE_BLOCK_SIZE, ri * TILE_BLOCK_SIZE),
+                                       (TILE_BLOCK_SIZE, TILE_BLOCK_SIZE))
 
-                            bouncer.handleBallCollision(tilerect)
-
-                            if ballDir in ['left', 'right']:
-                                bouncer.speed[0] = 0
-
-                            if ballDir == 'bottom':
-                                bouncer.speed[1] = 0
-
-                            """
-                                Handle Tile Bouncer via top based on tile type
-                            """
-                            if ballDir == 'top':
-
-                                if tile == TILE_NORMAL:
-                                    bouncer.speed[1] = -BOUNCER_V_SPEED
-                                elif tile == TILE_GREEN:
-                                    bouncer.speed[1] = -BOUNCER_V_SPEED * BOUNCER_V_FACTOR_BIG_BOUNCE
-                                elif tile == TILE_RED:
-                                    bouncer.speed[1] = -BOUNCER_V_SPEED * BOUNCER_V_FACTOR_SMALL_BOUNCE
-
-                        elif tile in TILES_DEATH_COLLISIONS:
-
-                            GameWorld.deathExplode()
+                if bouncer.isColliding(tilerect):
+                    collidingTilesList.append((ri,ci,tile,tilerect))
 
 
-                ci += 1
-            ri += 1
+        """
+            Go through colliding tiles list
+        """
+        for tileData in collidingTilesList:
+
+            tilerect = tileData[3]
+            tile = tileData[2]
+
+            ballDir = bouncer.getCollisionDirection(tilerect)
+
+            if tile in TILES_WITH_COLLISIONS:
+
+                bouncer.handleBallCollision(tilerect)
+
+                if ballDir in ['left', 'right']:
+                    bouncer.speed[0] = 0
+
+                if ballDir == 'bottom':
+                    bouncer.speed[1] = 0
+
+                """
+                    Handle Tile Bouncer via top based on tile type
+                """
+                if ballDir == 'top':
+
+                    if tile == TILE_NORMAL:
+                        bouncer.speed[1] = -BOUNCER_V_SPEED
+                    elif tile == TILE_GREEN:
+                        bouncer.speed[1] = -BOUNCER_V_SPEED * BOUNCER_V_FACTOR_BIG_BOUNCE
+                    elif tile == TILE_RED:
+                        bouncer.speed[1] = -BOUNCER_V_SPEED * BOUNCER_V_FACTOR_SMALL_BOUNCE
+
+            elif tile in TILES_DEATH_COLLISIONS:
+
+                GameWorld.deathExplode()
+                break
+
+
 
     @staticmethod
     def __update_BouncerMovingPlatforms():
