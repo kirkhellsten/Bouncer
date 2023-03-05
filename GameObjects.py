@@ -3,6 +3,7 @@ from LevelLoader import Level
 from Sound import *
 from Timer import *
 import random
+from Utility import Utils
 
 class ExitDoor:
     def __init__(self, pos, width, height):
@@ -28,10 +29,13 @@ class Bouncer:
         self.previousPosition[1] = self.position[1]
         self.position[1] += self.speed[1]
 
+
         if self.direction == 'left':
-            self.position[0] -= BALL_H_SPEED
+            self.position[0] -= BOUNCER_H_SPEED
         elif self.direction == 'right':
-            self.position[0] += BALL_H_SPEED
+            self.position[0] += BOUNCER_H_SPEED
+
+
 
     def isColliding(self, rect):
         if self.position[0] + self.boxingRadius >= rect.x and \
@@ -40,6 +44,53 @@ class Bouncer:
             self.position[1] - self.boxingRadius <= rect.y + rect.height:
             return True
         return False
+
+
+    """
+        Special Collision getters for Bouncer
+        Used to aid in collisions with rect sources
+    """
+    def getRightPositionForCollision(self, rectSource):
+        return rectSource.x + rectSource.width + self.boxingRadius + 1
+
+    def getLeftPositionForCollision(self, rectSource):
+        return rectSource.x - self.boxingRadius - 1
+
+    def getBottomPositionForCollision(self, rectSource):
+        return rectSource.y + rectSource.height + self.radius + 1
+
+    def getTopPositionForCollision(self, rectSource):
+        return rectSource.y - self.radius - 1
+
+    """
+        Special method to handle ball Collisions given rect
+        Call right after collision is detected
+    """
+    def handleBallCollision(self, rectSource):
+        ballDir = self.getCollisionDirection(rectSource)
+        if ballDir == 'right':
+            self.position[0] = self.getRightPositionForCollision(rectSource)
+        elif ballDir == 'left':
+            self.position[0] = self.getLeftPositionForCollision(rectSource)
+        elif ballDir == 'top':
+            self.position[1] = self.getTopPositionForCollision(rectSource)
+        elif ballDir == 'bottom':
+            self.position[1] = self.getBottomPositionForCollision(rectSource)
+
+    """
+        Special method to get direction ball collided with rectSource
+    """
+    def getCollisionDirection(self, tilerect):
+        if self.previousPosition[0] + self.boxingRadius < tilerect.x:
+            return 'left'
+        elif self.previousPosition[0] - self.boxingRadius > tilerect.x + tilerect.width:
+            return 'right'
+        elif self.previousPosition[1] + self.boxingRadius < tilerect.y:
+            return 'top'
+        elif self.previousPosition[1] - self.boxingRadius > tilerect.y + tilerect.height:
+            return 'bottom'
+        else:
+            return 'none'
 
     def setPosition(self, pos):
         self.position = [pos[0], pos[1]]

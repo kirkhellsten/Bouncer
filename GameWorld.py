@@ -14,7 +14,7 @@ class GameWorld:
 
         Sound.init()
 
-        Level.currentLevel = Level("level6.txt")
+        Level.currentLevel = Level("level7.txt")
 
         bouncer = Bouncer(Utils.getMiddlePosition(), BALL_RADIUS)
         Bouncer.bouncer = bouncer
@@ -120,27 +120,44 @@ class GameWorld:
         for tileRow in cl.mapping:
             ci = 0
             for tile in tileRow:
-                tilerect = pygame.Rect((ci * TILE_BLOCK_SIZE, ri * TILE_BLOCK_SIZE),
-                                       (TILE_BLOCK_SIZE, TILE_BLOCK_SIZE))
 
-                if bouncer.isColliding(tilerect):
-                    if tile == 1:
-                        ballDir = Utils.getBallDirection(tilerect, bouncer.previousPosition, bouncer.boxingRadius)
-                        if ballDir == 'top':
-                            bouncer.speed[1] = -BOUNCER_V_SPEED
-                            bouncer.position[1] = ri * TILE_BLOCK_SIZE - bouncer.radius - 1
-                        elif ballDir == 'right':
-                            bouncer.position[0] = ci * TILE_BLOCK_SIZE + TILE_BLOCK_SIZE + bouncer.boxingRadius + 1
-                        elif ballDir == 'left':
-                            bouncer.position[0] = ci * TILE_BLOCK_SIZE - bouncer.radius - 1
-                        elif ballDir == 'bottom':
-                            bouncer.position[1] = ri * TILE_BLOCK_SIZE + TILE_BLOCK_SIZE + bouncer.boxingRadius + 1
-                            bouncer.speed[1] = 0
-                    elif tile == 2:
-                        GameWorld.deathExplode()
-                    elif tile == 3:
-                        bouncer.position[1] = ri * TILE_BLOCK_SIZE - bouncer.radius - 1
-                        bouncer.speed[1] = -BOUNCER_V_SPEED*1.6
+                # Omit Tile 0s
+                if not tile == 0:
+
+                    tilerect = pygame.Rect((ci * TILE_BLOCK_SIZE, ri * TILE_BLOCK_SIZE),
+                                           (TILE_BLOCK_SIZE, TILE_BLOCK_SIZE))
+
+                    if bouncer.isColliding(tilerect):
+
+                        ballDir = bouncer.getCollisionDirection(tilerect)
+
+                        if tile in TILES_WITH_COLLISIONS:
+
+                            bouncer.handleBallCollision(tilerect)
+
+                            if ballDir in ['left', 'right']:
+                                bouncer.speed[0] = 0
+
+                            if ballDir == 'bottom':
+                                bouncer.speed[1] = 0
+
+                            """
+                                Handle Tile Bouncer via top based on tile type
+                            """
+                            if ballDir == 'top':
+
+                                if tile == TILE_NORMAL:
+                                    bouncer.speed[1] = -BOUNCER_V_SPEED
+                                elif tile == TILE_GREEN:
+                                    bouncer.speed[1] = -BOUNCER_V_SPEED * BOUNCER_V_FACTOR_BIG_BOUNCE
+                                elif tile == TILE_RED:
+                                    bouncer.speed[1] = -BOUNCER_V_SPEED * BOUNCER_V_FACTOR_SMALL_BOUNCE
+
+                        elif tile in TILES_DEATH_COLLISIONS:
+
+                            GameWorld.deathExplode()
+
+
                 ci += 1
             ri += 1
 

@@ -34,16 +34,21 @@ class Utils:
             ri += 1
         return False
 
+
+
+
     @staticmethod
-    def getBallDirection(sourceRect, previousCenterPosition, radius):
+    def getBallDirections(sourceRect, previousCenterPosition, radius):
+        dirs = []
         if previousCenterPosition[0] + radius < sourceRect.x:
-            return 'left'
-        elif previousCenterPosition[0] - radius > sourceRect.x + sourceRect.width:
-            return 'right'
-        elif previousCenterPosition[1] + radius < sourceRect.y:
-            return 'top'
-        elif previousCenterPosition[1] - radius > sourceRect.y + sourceRect.height:
-            return 'bottom'
+            dirs.append('left')
+        if previousCenterPosition[0] - radius > sourceRect.x + sourceRect.width:
+            dirs.append('right')
+        if previousCenterPosition[1] + radius < sourceRect.y:
+            dirs.append('top')
+        if previousCenterPosition[1] - radius > sourceRect.y + sourceRect.height:
+            dirs.append('bottom')
+        return dirs
 
     def create_neon(surf):
         surf_alpha = surf.convert_alpha()

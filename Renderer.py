@@ -29,14 +29,30 @@ class Renderer:
                     pygame.draw.rect(screenBuffer, TILE_BORDER_COLOR, tilerect, TILE_BORDER_WIDTH, TILE_BORDER_RADIUS)
                     pygame.gfxdraw.rectangle(screenBuffer, tilerect, TILE_BORDER_COLOR)
                 elif tile == 2:
-                    triangle = [(ci * TILE_BLOCK_SIZE, (ri + 1) * TILE_BLOCK_SIZE),
+                    floorSpikes = [(ci * TILE_BLOCK_SIZE, (ri + 1) * TILE_BLOCK_SIZE),
                                 ((ci + 1 / 2) * TILE_BLOCK_SIZE, ri * TILE_BLOCK_SIZE),
                                 ((ci + 1 ) * TILE_BLOCK_SIZE, (ri + 1) * TILE_BLOCK_SIZE)]
-                    pygame.draw.polygon(screenBuffer, (255, 255, 255), triangle)
+                    pygame.draw.polygon(screenBuffer, (255, 255, 255), floorSpikes)
+                elif tile == 5:
+                    rightWallSpikes = [(ci * TILE_BLOCK_SIZE, (ri + 1/2) * TILE_BLOCK_SIZE),
+                                ((ci + 1) * TILE_BLOCK_SIZE, ri * TILE_BLOCK_SIZE),
+                                ((ci + 1) * TILE_BLOCK_SIZE, (ri + 1) * TILE_BLOCK_SIZE)]
+                    pygame.draw.polygon(screenBuffer, (255, 255, 255), rightWallSpikes)
+                elif tile == 6:
+                    leftWallSpikes = [(ci * TILE_BLOCK_SIZE, (ri * TILE_BLOCK_SIZE)),
+                                ((ci + 1) * TILE_BLOCK_SIZE, (ri+1/2) * TILE_BLOCK_SIZE),
+                                (ci * TILE_BLOCK_SIZE, (ri + 1) * TILE_BLOCK_SIZE)]
+                    pygame.draw.polygon(screenBuffer, (255, 255, 255), leftWallSpikes)
                 elif tile == 3:
                     tilerect = pygame.Rect((ci * TILE_BLOCK_SIZE, ri * TILE_BLOCK_SIZE),
                                            (TILE_BLOCK_SIZE, TILE_BLOCK_SIZE))
                     pygame.draw.rect(screenBuffer, (0,255,0), tilerect)
+                    pygame.draw.rect(screenBuffer, (255,255,255), tilerect, TILE_BORDER_WIDTH, TILE_BORDER_RADIUS)
+                    pygame.gfxdraw.rectangle(screenBuffer, tilerect, TILE_BORDER_COLOR)
+                elif tile == 4:
+                    tilerect = pygame.Rect((ci * TILE_BLOCK_SIZE, ri * TILE_BLOCK_SIZE),
+                                           (TILE_BLOCK_SIZE, TILE_BLOCK_SIZE))
+                    pygame.draw.rect(screenBuffer, (255,0,0), tilerect)
                     pygame.draw.rect(screenBuffer, (255,255,255), tilerect, TILE_BORDER_WIDTH, TILE_BORDER_RADIUS)
                     pygame.gfxdraw.rectangle(screenBuffer, tilerect, TILE_BORDER_COLOR)
                 ci += 1

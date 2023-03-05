@@ -10,5 +10,9 @@ class Controls:
             bouncer.direction = 'left'
         elif keys[pygame.K_RIGHT]:
             bouncer.direction = 'right'
+        elif keys[pygame.K_UP]:
+            bouncer.direction = 'up'
+        elif keys[pygame.K_DOWN]:
+            bouncer.direction = 'down'
         else:
             bouncer.direction = 'none'
