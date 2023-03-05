@@ -28,8 +28,8 @@
 [exitdoor_position]
 700,100
 [next_map]
-level1.txt
+level6.txt
 [moving_platforms]
-400, 500
-200, 350
-400, 150
+400,500,left
+200,350,right
+400,150,left

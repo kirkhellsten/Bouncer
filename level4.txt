@@ -30,4 +30,4 @@
 [next_map]
 level5.txt
 [moving_platforms]
-400, 500
+400,500,right
