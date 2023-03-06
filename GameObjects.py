@@ -22,9 +22,18 @@ class Bouncer:
         self.radius = radius
         self.direction = 'none'
         self.boxingRadius = radius - BOXING_DECREMENT
+        self.gravityDirection = 'down'
 
     def update(self):
-        self.speed[1] += 0.98
+
+        """
+            Apply Gravity based on direction
+        """
+        if self.gravityDirection == 'up':
+            self.speed[1] += -GRAVITY_SPEED
+        elif self.gravityDirection == 'down':
+            self.speed[1] += GRAVITY_SPEED
+
         self.previousPosition[0] = self.position[0]
         self.previousPosition[1] = self.position[1]
         self.position[1] += self.speed[1]
@@ -36,6 +45,14 @@ class Bouncer:
             self.position[0] += BOUNCER_H_SPEED
 
 
+    def changeGravityDirection(self):
+
+        if self.gravityDirection == 'down':
+            self.gravityDirection = 'up'
+        elif self.gravityDirection == 'up':
+            self.gravityDirection = 'down'
+
+        self.speed[1] = 0
 
     def isColliding(self, rect):
         if self.position[0] + self.boxingRadius >= rect.x and \

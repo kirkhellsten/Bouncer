@@ -36,6 +36,7 @@ class GameWorld:
         bouncer.setPosition(Level.currentLevel.bouncerPosition)
         bouncer.speed = [0, 0]
         bouncer.direction = 'none'
+        bouncer.gravityDirection = 'down'
 
 
     @staticmethod
@@ -159,9 +160,10 @@ class GameWorld:
                     bouncer.speed[1] = 0
 
                 """
-                    Handle Tile Bouncer via top based on tile type
+                    Handle Tile Bouncer via top and down based 
+                    on tile type and gravity direction
                 """
-                if ballDir == 'top':
+                if ballDir == 'top' and bouncer.gravityDirection == 'down':
 
                     if tile == TILE_NORMAL:
                         bouncer.speed[1] = -BOUNCER_V_SPEED
@@ -169,6 +171,20 @@ class GameWorld:
                         bouncer.speed[1] = -BOUNCER_V_SPEED * BOUNCER_V_FACTOR_BIG_BOUNCE
                     elif tile == TILE_RED:
                         bouncer.speed[1] = -BOUNCER_V_SPEED * BOUNCER_V_FACTOR_SMALL_BOUNCE
+                    elif tile == TILE_BLACK:
+                        bouncer.changeGravityDirection()
+
+                elif ballDir == 'bottom' and bouncer.gravityDirection == 'up':
+
+                    if tile == TILE_NORMAL:
+                        bouncer.speed[1] = BOUNCER_V_SPEED
+                    elif tile == TILE_GREEN:
+                        bouncer.speed[1] = BOUNCER_V_SPEED * BOUNCER_V_FACTOR_BIG_BOUNCE
+                    elif tile == TILE_RED:
+                        bouncer.speed[1] = BOUNCER_V_SPEED * BOUNCER_V_FACTOR_SMALL_BOUNCE
+                    elif tile == TILE_BLACK:
+                        bouncer.changeGravityDirection()
+
 
             elif tile in TILES_DEATH_COLLISIONS:
 
