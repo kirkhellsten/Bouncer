@@ -14,7 +14,7 @@ class GameWorld:
 
         Sound.init()
 
-        Level.currentLevel = Level("level7.txt")
+        Level.currentLevel = Level("level29.txt")
 
         bouncer = Bouncer(Utils.getMiddlePosition(), BALL_RADIUS)
         Bouncer.bouncer = bouncer
@@ -25,7 +25,7 @@ class GameWorld:
         bouncer.setPosition(Level.currentLevel.bouncerPosition)
 
         MovingPlatform.CreateMovingPlatforms()
-        LaserVGun.CreateLaserVGuns()
+        LaserGun.CreateLaserGuns()
 
         Sound.playMainMusic()
         Sound.playIntroTeleport()
@@ -42,11 +42,11 @@ class GameWorld:
     @staticmethod
     def onNextLevel():
         Timer.quit()
-        LaserV.quit()
+        Laser.quit()
         exitDoor = ExitDoor(Level.currentLevel.exitdoorPosition, EXIT_DOOR_WIDTH, EXIT_DOOR_HEIGHT)
         ExitDoor.exitDoor = exitDoor
         MovingPlatform.CreateMovingPlatforms()
-        LaserVGun.CreateLaserVGuns()
+        LaserGun.CreateLaserGuns()
 
 
     @staticmethod
@@ -73,7 +73,7 @@ class GameWorld:
             for tileRow in cl.mapping:
                 ci = 0
                 for tile in tileRow:
-                    if tile == 1:
+                    if tile == TILE_NORMAL or tile == TILE_RED or tile == TILE_GREEN:
                         tilerect = pygame.Rect((ci * TILE_BLOCK_SIZE, ri * TILE_BLOCK_SIZE),
                                                (TILE_BLOCK_SIZE, TILE_BLOCK_SIZE))
                         if platform.isColliding(tilerect):
@@ -99,7 +99,7 @@ class GameWorld:
         bouncer = Bouncer.bouncer
         exitDoorRect = pygame.Rect((exitDoor.position[0],exitDoor.position[1]), (exitDoor.width, exitDoor.height))
         if bouncer.isColliding(exitDoorRect):
-            Level.currentLevel.loadFile(Level.currentLevel.nextLevel)
+            Level.currentLevel.loadLevel(Level.currentLevel.nextLevel)
             GameWorld.reset()
             GameWorld.onNextLevel()
 
@@ -185,7 +185,6 @@ class GameWorld:
                     elif tile == TILE_BLACK:
                         bouncer.changeGravityDirection()
 
-
             elif tile in TILES_DEATH_COLLISIONS:
 
                 GameWorld.deathExplode()
@@ -195,13 +194,53 @@ class GameWorld:
 
     @staticmethod
     def __update_BouncerMovingPlatforms():
+
+        """
+            Go through moving platforms and detect collision with bouncer
+        """
         bouncer = Bouncer.bouncer
         for platform in MovingPlatform.platforms:
-            platformRect = pygame.Rect((platform.position[0],platform.position[1]), (platform.width, platform.height))
-            if bouncer.isColliding(platformRect):
-                bouncer.speed[1] = -BOUNCER_V_SPEED
-                bouncer.position[1] = platform.position[1] - bouncer.radius - 1
 
+            platformRect = pygame.Rect((platform.position[0],platform.position[1]), (platform.width, platform.height))
+
+            if bouncer.isCollidingWithObj(platformRect):
+
+                """
+                    Make Bouncer bounce off moving platforms
+                """
+                bouncer.handleBallCollision(platformRect)
+
+                ballDir = bouncer.getCollisionDirection(platformRect)
+
+                if bouncer.gravityDirection == 'down' and ballDir == 'top':
+                    bouncer.speed[1] = -BOUNCER_V_SPEED
+                elif bouncer.gravityDirection == 'up' and ballDir == 'bottom':
+                    bouncer.speed[1] = BOUNCER_V_SPEED
+
+    @staticmethod
+    def __update_BouncerLaserGuns():
+
+        """
+            Go through laser guns and detect collision with bouncer
+        """
+        bouncer = Bouncer.bouncer
+        for gun in LaserGun.guns:
+
+            gunRect = pygame.Rect((gun.position[0],gun.position[1]), (gun.width, gun.height))
+
+            if bouncer.isCollidingWithObj(gunRect):
+
+                """
+                    Make Bouncer bounce off moving platforms
+                """
+                bouncer.handleBallCollision(gunRect)
+
+                ballDir = bouncer.getCollisionDirection(gunRect)
+
+                if bouncer.gravityDirection == 'down' and ballDir == 'top':
+                    bouncer.speed[1] = -BOUNCER_V_SPEED
+                elif bouncer.gravityDirection == 'up' and ballDir == 'bottom':
+                    bouncer.speed[1] = BOUNCER_V_SPEED
 
     @staticmethod
     def __update_Pixels():
@@ -222,26 +261,26 @@ class GameWorld:
     @staticmethod
     def __update_LaserRemove(laser):
         try:
-            lasersVList = LaserV.lasers
-            laserVGun = laser.parent
-            lasersVList.remove(laser)
-            laserVGun.triggerShootLaserEvent()
+            lasersList = Laser.lasers
+            laserGun = laser.parent
+            lasersList.remove(laser)
+            laserGun.triggerShootLaserEvent()
         except Exception as e:
             return None
 
     @staticmethod
-    def __update_LaserV():
+    def __update_Laser():
         try:
-            lasersVList = LaserV.lasers
+            lasersList = Laser.lasers
             bouncer = Bouncer.bouncer
-            for laser in lasersVList:
+            for laser in lasersList:
                 laserRect = pygame.Rect((laser.position[0], laser.position[1]), (laser.width, laser.height))
                 if not Utils.collidesWithTile(laserRect):
                     laser.update()
                 elif not laser.hitTile:
                     laser.hitTile = True
                     Timer.SetTimerEvent(laser.parent.resetTime, GameWorld.__update_LaserRemove, laser)
-                if bouncer.isColliding(laserRect):
+                if bouncer.isCollidingWithObj(laserRect):
                     GameWorld.deathExplode()
         except Exception as e:
             return None
@@ -257,6 +296,7 @@ class GameWorld:
         GameWorld.__update_BoucerCheckTiles()
         GameWorld.__update_MovingPlatforms()
         GameWorld.__update_BouncerMovingPlatforms()
+        GameWorld.__update_BouncerLaserGuns()
 
-        GameWorld.__update_LaserV()
+        GameWorld.__update_Laser()
         GameWorld.__update_Pixels()

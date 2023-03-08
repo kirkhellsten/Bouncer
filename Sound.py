@@ -9,6 +9,7 @@ class Sound:
 
         Sound.SND_MAIN_MUSIC = pygame.mixer.Sound("main-music.mp3")
         Sound.SND_INTRO_TELEPORT = pygame.mixer.Sound("intro-teleport.mp3")
+        Sound.SND_BALL_BOUNCE = pygame.mixer.Sound("ballbounce.wav")
         Sound.SND_DEATH_SOUND = pygame.mixer.Sound("death-sound.mp3")
 
     @staticmethod
@@ -19,6 +20,11 @@ class Sound:
     @staticmethod
     def playIntroTeleport():
         pygame.mixer.Sound.play(Sound.SND_INTRO_TELEPORT)
+        pygame.mixer.music.stop()
+
+    @staticmethod
+    def playBallBounce():
+        pygame.mixer.Sound.play(Sound.SND_BALL_BOUNCE)
         pygame.mixer.music.stop()
 
     @staticmethod

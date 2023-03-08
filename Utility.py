@@ -35,8 +35,6 @@ class Utils:
         return False
 
 
-
-
     @staticmethod
     def getBallDirections(sourceRect, previousCenterPosition, radius):
         dirs = []

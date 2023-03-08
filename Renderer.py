@@ -112,16 +112,16 @@ class Renderer:
             return None
 
     @staticmethod
-    def __drawLaserVGuns():
-        guns = LaserVGun.guns
+    def __drawLaserGuns():
+        guns = LaserGun.guns
         for gun in guns:
-            gunRect = pygame.Rect((gun.position[0], gun.position[1]), (VGUN_WIDTH, VGUN_HEIGHT))
+            gunRect = pygame.Rect((gun.position[0], gun.position[1]), (gun.width, gun.height))
             pygame.draw.rect(screenBuffer, VGUN_COLOR, gunRect)
 
     @staticmethod
-    def __drawLaserV():
+    def __drawLaser():
         try:
-            lasers = LaserV.lasers
+            lasers = Laser.lasers
             for laser in lasers:
                 laserRect = pygame.Rect((laser.position[0], laser.position[1]), (laser.width, laser.height))
                 pygame.draw.rect(screenBuffer, (255, 0, 0), laserRect)
@@ -134,13 +134,14 @@ class Renderer:
         Renderer.__drawBackground()
         Renderer.__drawPixels()
 
-        Renderer.__drawLaserV()
+        Renderer.__drawLaser()
 
         Renderer.__drawExitDoor()
         Renderer.__drawBouncer()
         Renderer.__drawGlowExitDoor()
         Renderer.__drawExitDoorText()
-        Renderer.__drawLevelTiles()
-        Renderer.__drawMovingPlatforms()
 
-        Renderer.__drawLaserVGuns()
+        Renderer.__drawMovingPlatforms()
+        Renderer.__drawLevelTiles()
+
+        Renderer.__drawLaserGuns()

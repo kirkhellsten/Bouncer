@@ -1,7 +1,10 @@
 
 class Level:
     def __init__(self, filepath):
-        self.loadFile(filepath)
+        self.loadLevel(filepath)
+
+    def loadLevel(self, levelFileName):
+        self.loadFile("levels/" + levelFileName)
 
     def loadFile(self, filepath):
 
@@ -11,9 +14,10 @@ class Level:
 
         self.movingPlatformsPosition = []
         self.movingPlatformData = []
-        self.laserVGunPositions = []
-        self.laserVGunTimers = []
-        self.laserVGunDirection = 'none'
+        self.laserGunPositions = []
+        self.laserGunTimers = []
+        self.laserGunDirection = 'none'
+        self.laserGunData = []
 
         for line in f:
 
@@ -31,8 +35,8 @@ class Level:
                 parseSector = "next_map"
             elif line == "[moving_platforms]":
                 parseSector = "moving_platforms"
-            elif line == "[laser_vguns]":
-                parseSector = "laser_vguns"
+            elif line == "[laser_guns]":
+                parseSector = "laser_guns"
 
             if line.find("[") != -1 and line.find("]") != -1:
                 continue
@@ -58,8 +62,9 @@ class Level:
             elif parseSector == "moving_platforms":
                 dataTokens = line.split(",")
                 self.movingPlatformData.append([int(dataTokens[0]), int(dataTokens[1]), dataTokens[2]])
-            elif parseSector == "laser_vguns":
+            elif parseSector == "laser_guns":
                 dataTokens = line.split(",")
-                self.laserVGunPositions.append([int(dataTokens[0]), int(dataTokens[1])])
-                self.laserVGunTimers.append([int(dataTokens[2]), int(dataTokens[3])])
-                self.laserVGunDirection = dataTokens[4]
+                self.laserGunPositions.append([int(dataTokens[0]), int(dataTokens[1])])
+                self.laserGunTimers.append([int(dataTokens[2]), int(dataTokens[3])])
+                self.laserGunDirection = dataTokens[4]
+                self.laserGunData.append([int(dataTokens[0]), int(dataTokens[1]), int(dataTokens[2]), int(dataTokens[3]), dataTokens[4]])

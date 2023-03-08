@@ -62,6 +62,19 @@ class Bouncer:
             return True
         return False
 
+    def isCollidingWithObj(self, objRect):
+
+        if self.position[0] + self.boxingRadius >= objRect.x and \
+            self.position[0] - self.boxingRadius <= objRect.x + objRect.width:
+
+            if self.position[1] + self.radius*2 > objRect.y and \
+                self.previousPosition[1] + self.radius*2 < objRect.y or \
+                self.position[1] < objRect.y + objRect.height and \
+                self.previousPosition[1] > objRect.y + objRect.height:
+                return True
+
+        return self.isColliding(objRect)
+
 
     """
         Special Collision getters for Bouncer
@@ -130,6 +143,7 @@ class MovingPlatform:
             position = [m[0],m[1]]
             platforms.append(MovingPlatform(position, m[2]))
 
+
     def isColliding(self, rect):
         if self.position[0] + self.width - GENERAL_BOXING_DECREMENT >= rect.x and \
             self.position[1] + self.height - GENERAL_BOXING_DECREMENT >= rect.y and \
@@ -137,6 +151,7 @@ class MovingPlatform:
             self.position[1] + GENERAL_BOXING_DECREMENT <= rect.y + rect.height:
             return True
         return False
+
 
     def update(self):
         if self.direction == 'left':
@@ -149,37 +164,61 @@ class MovingPlatform:
             self.position[1] += MOVING_PLATFORM_V_SPEED
 
 
-class LaserV:
+class Laser:
     def __init__(self, pos, parent):
         self.position = [pos[0],pos[1]]
-        self.width = LASERV_WIDTH
-        self.height = LASERV_HEIGHT
         self.hitTile = False
+        self.direction = parent.direction
         self.parent = parent
 
+        if parent.direction in ['up','down']:
+            self.width = LASERV_WIDTH
+            self.height = LASERV_HEIGHT
+        elif parent.direction in ['left','right']:
+            self.height = LASERV_WIDTH
+            self.width = LASERV_HEIGHT
+
     def update(self):
-        self.height += VGUN_LASER_SPEED
+
+        if self.direction == 'down':
+            self.height += VGUN_LASER_SPEED
+        elif self.direction == 'up':
+            self.height += VGUN_LASER_SPEED
+            self.position[1] -= VGUN_LASER_SPEED
+        elif self.direction == 'left':
+            self.width += VGUN_LASER_SPEED
+            self.position[0] -= VGUN_LASER_SPEED
+        elif self.direction == 'right':
+            self.width += VGUN_LASER_SPEED
+
 
     @staticmethod
     def quit():
-        LaserV.lasers = []
+        Laser.lasers = []
 
     @staticmethod
-    def CreateLaserV(pos, parent):
+    def CreateLaser(pos, parent):
         try:
-            laser = LaserV(pos, parent)
-            LaserV.lasers.append(laser)
+            laser = Laser(pos, parent)
+            Laser.lasers.append(laser)
         except Exception as e:
-            LaserV.lasers = []
-            LaserV.lasers.append(laser)
+            Laser.lasers = []
+            Laser.lasers.append(laser)
 
-class LaserVGun:
-    def __init__(self, pos, loopTime, resetTime):
+class LaserGun:
+    def __init__(self, pos, loopTime, resetTime, direction):
         self.position = [pos[0], pos[1]]
-        self.width = VGUN_WIDTH
-        self.height = VGUN_HEIGHT
+
+        if direction == 'up' or direction == 'down':
+            self.width = VGUN_WIDTH
+            self.height = VGUN_HEIGHT
+        elif direction == 'left' or direction == 'right':
+            self.height = VGUN_WIDTH
+            self.width = VGUN_HEIGHT
+
         self.loopTime = loopTime
         self.resetTime = resetTime
+        self.direction = direction
         self.triggerShootLaserEvent()
 
     def triggerShootLaserEvent(self):
@@ -189,21 +228,24 @@ class LaserVGun:
         pos = [self.position[0],self.position[1]]
         pos[0] += self.width / 2
         pos[1] += self.height / 2
-        LaserV.CreateLaserV(pos, self)
+        Laser.CreateLaser(pos, self)
         Sound.playLaserGunSound()
 
     @staticmethod
-    def CreateLaserVGuns():
-        positions = Level.currentLevel.laserVGunPositions
-        timers = Level.currentLevel.laserVGunTimers
-        LaserVGun.guns = []
-        guns = LaserVGun.guns
-        for i in range(len(positions)):
-            position = positions[i]
-            loopTime = timers[i][0]
-            resetTime = timers[i][1]
-            laserVGun = LaserVGun(position, loopTime, resetTime)
-            guns.append(laserVGun)
+    def CreateLaserGuns():
+
+        laserGunData = Level.currentLevel.laserGunData
+
+        LaserGun.guns = []
+        guns = LaserGun.guns
+
+        for i in range(len(laserGunData)):
+            position = [laserGunData[i][0], laserGunData[i][1]]
+            loopTime = laserGunData[i][2]
+            resetTime = laserGunData[i][3]
+            direction = laserGunData[i][4]
+            laserGun = LaserGun(position, loopTime, resetTime, direction)
+            guns.append(laserGun)
 
 class Pixels:
     def __init__(self, initialPos):
