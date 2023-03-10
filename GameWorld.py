@@ -14,7 +14,7 @@ class GameWorld:
 
         Sound.init()
 
-        Level.currentLevel = Level("level29.txt")
+        Level.currentLevel = Level("level12.txt")
 
         bouncer = Bouncer(Utils.getMiddlePosition(), BALL_RADIUS)
         Bouncer.bouncer = bouncer
@@ -34,10 +34,10 @@ class GameWorld:
     def reset():
         bouncer = Bouncer.bouncer
         bouncer.setPosition(Level.currentLevel.bouncerPosition)
+        bouncer.setPreviousPosition(Level.currentLevel.bouncerPosition)
         bouncer.speed = [0, 0]
         bouncer.direction = 'none'
         bouncer.gravityDirection = 'down'
-
 
     @staticmethod
     def onNextLevel():
@@ -47,7 +47,6 @@ class GameWorld:
         ExitDoor.exitDoor = exitDoor
         MovingPlatform.CreateMovingPlatforms()
         LaserGun.CreateLaserGuns()
-
 
     @staticmethod
     def death():
@@ -100,8 +99,8 @@ class GameWorld:
         exitDoorRect = pygame.Rect((exitDoor.position[0],exitDoor.position[1]), (exitDoor.width, exitDoor.height))
         if bouncer.isColliding(exitDoorRect):
             Level.currentLevel.loadLevel(Level.currentLevel.nextLevel)
-            GameWorld.reset()
             GameWorld.onNextLevel()
+            GameWorld.reset()
 
     @staticmethod
     def __update_BouncerBoundariesCheck():
@@ -114,7 +113,7 @@ class GameWorld:
             GameWorld.death()
 
     @staticmethod
-    def __update_BoucerCheckTiles():
+    def __GetListOfCollidingTiles():
 
         """
             Get List of colliding tiles
@@ -135,13 +134,23 @@ class GameWorld:
                 tilerect = pygame.Rect((ci * TILE_BLOCK_SIZE, ri * TILE_BLOCK_SIZE),
                                        (TILE_BLOCK_SIZE, TILE_BLOCK_SIZE))
 
-                if bouncer.isColliding(tilerect):
+                if bouncer.isCollidingWithObj(tilerect):
                     collidingTilesList.append((ri,ci,tile,tilerect))
 
+
+        print(collidingTilesList)
+        return collidingTilesList
+
+    @staticmethod
+    def __update_BoucerCheckTiles():
+
+        collidingTilesList = GameWorld.__GetListOfCollidingTiles()
 
         """
             Go through colliding tiles list
         """
+        bouncer = Bouncer.bouncer
+
         for tileData in collidingTilesList:
 
             tilerect = tileData[3]
@@ -168,7 +177,10 @@ class GameWorld:
                     if tile == TILE_NORMAL:
                         bouncer.speed[1] = -BOUNCER_V_SPEED
                     elif tile == TILE_GREEN:
-                        bouncer.speed[1] = -BOUNCER_V_SPEED * BOUNCER_V_FACTOR_BIG_BOUNCE
+                        if abs(bouncer.speed[1]) > BOUNCER_V_SPEED * BOUNCER_V_FACTOR_BIG_BOUNCE:
+                            bouncer.speed[1] = -abs(bouncer.speed[1])
+                        else:
+                            bouncer.speed[1] = -BOUNCER_V_SPEED * BOUNCER_V_FACTOR_BIG_BOUNCE
                     elif tile == TILE_RED:
                         bouncer.speed[1] = -BOUNCER_V_SPEED * BOUNCER_V_FACTOR_SMALL_BOUNCE
                     elif tile == TILE_BLACK:
@@ -179,18 +191,18 @@ class GameWorld:
                     if tile == TILE_NORMAL:
                         bouncer.speed[1] = BOUNCER_V_SPEED
                     elif tile == TILE_GREEN:
-                        bouncer.speed[1] = BOUNCER_V_SPEED * BOUNCER_V_FACTOR_BIG_BOUNCE
+                        if abs(bouncer.speed[1]) > BOUNCER_V_SPEED * BOUNCER_V_FACTOR_BIG_BOUNCE:
+                            bouncer.speed[1] = abs(bouncer.speed[1])
+                        else:
+                            bouncer.speed[1] = BOUNCER_V_SPEED * BOUNCER_V_FACTOR_BIG_BOUNCE
                     elif tile == TILE_RED:
                         bouncer.speed[1] = BOUNCER_V_SPEED * BOUNCER_V_FACTOR_SMALL_BOUNCE
                     elif tile == TILE_BLACK:
                         bouncer.changeGravityDirection()
 
             elif tile in TILES_DEATH_COLLISIONS:
-
                 GameWorld.deathExplode()
                 break
-
-
 
     @staticmethod
     def __update_BouncerMovingPlatforms():
@@ -216,6 +228,11 @@ class GameWorld:
                     bouncer.speed[1] = -BOUNCER_V_SPEED
                 elif bouncer.gravityDirection == 'up' and ballDir == 'bottom':
                     bouncer.speed[1] = BOUNCER_V_SPEED
+                elif bouncer.gravityDirection == 'down' and ballDir == 'bottom' or \
+                     bouncer.gravityDirection == 'up' and ballDir == 'top':
+                    bouncer.speed[1] = 0
+
+
 
     @staticmethod
     def __update_BouncerLaserGuns():
@@ -291,12 +308,17 @@ class GameWorld:
         bouncer = Bouncer.bouncer
         bouncer.update()
 
+        GameWorld.__update_MovingPlatforms()
+
         GameWorld.__update_BouncerBoundariesCheck()
         GameWorld.__update_BouncerExitDoorCheck()
-        GameWorld.__update_BoucerCheckTiles()
-        GameWorld.__update_MovingPlatforms()
+
         GameWorld.__update_BouncerMovingPlatforms()
         GameWorld.__update_BouncerLaserGuns()
 
+        GameWorld.__update_BoucerCheckTiles()
+
+
         GameWorld.__update_Laser()
         GameWorld.__update_Pixels()
+

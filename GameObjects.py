@@ -17,7 +17,7 @@ class ExitDoor:
 class Bouncer:
     def __init__(self, pos, radius):
         self.position = [pos[0],pos[1]]
-        self.previousPosition = [0,0]
+        self.previousPosition = [pos[0],pos[1]]
         self.speed = [0, 0]
         self.radius = radius
         self.direction = 'none'
@@ -54,6 +54,9 @@ class Bouncer:
 
         self.speed[1] = 0
 
+    """
+        Fall back collision detection. More primitive than isCollidingWithObj
+    """
     def isColliding(self, rect):
         if self.position[0] + self.boxingRadius >= rect.x and \
             self.position[1] + self.boxingRadius >= rect.y and \
@@ -62,6 +65,10 @@ class Bouncer:
             return True
         return False
 
+    """
+        More advance collision detection. Fall back to isColliding
+        if this detection doesn't work
+    """
     def isCollidingWithObj(self, objRect):
 
         if self.position[0] + self.boxingRadius >= objRect.x and \
@@ -123,8 +130,11 @@ class Bouncer:
             return 'none'
 
     def setPosition(self, pos):
+        self.previousPosition = [self.position[0],self.position[1]]
         self.position = [pos[0], pos[1]]
 
+    def setPreviousPosition(self, pos):
+        self.previousPosition = [pos[0],pos[1]]
 
 class MovingPlatform:
     def __init__(self, pos, direction):

@@ -32,22 +32,22 @@ class Renderer:
                     floorSpikes = [(ci * TILE_BLOCK_SIZE, (ri + 1) * TILE_BLOCK_SIZE),
                                 ((ci + 1 / 2) * TILE_BLOCK_SIZE, ri * TILE_BLOCK_SIZE),
                                 ((ci + 1 ) * TILE_BLOCK_SIZE, (ri + 1) * TILE_BLOCK_SIZE)]
-                    pygame.draw.polygon(screenBuffer, (255, 255, 255), floorSpikes)
+                    pygame.draw.polygon(screenBuffer, SPIKE_COLOR, floorSpikes)
                 elif tile == 8:
                     ceilSpikes = [(ci * TILE_BLOCK_SIZE, ri * TILE_BLOCK_SIZE),
                                 ((ci + 1/2) * TILE_BLOCK_SIZE, (ri+1) * TILE_BLOCK_SIZE),
                                 ((ci + 1) * TILE_BLOCK_SIZE, ri * TILE_BLOCK_SIZE)]
-                    pygame.draw.polygon(screenBuffer, (255, 255, 255), ceilSpikes)
+                    pygame.draw.polygon(screenBuffer, SPIKE_COLOR, ceilSpikes)
                 elif tile == 5:
                     rightWallSpikes = [(ci * TILE_BLOCK_SIZE, (ri + 1/2) * TILE_BLOCK_SIZE),
                                 ((ci + 1) * TILE_BLOCK_SIZE, ri * TILE_BLOCK_SIZE),
                                 ((ci + 1) * TILE_BLOCK_SIZE, (ri + 1) * TILE_BLOCK_SIZE)]
-                    pygame.draw.polygon(screenBuffer, (255, 255, 255), rightWallSpikes)
+                    pygame.draw.polygon(screenBuffer, SPIKE_COLOR, rightWallSpikes)
                 elif tile == 6:
                     leftWallSpikes = [(ci * TILE_BLOCK_SIZE, (ri * TILE_BLOCK_SIZE)),
                                 ((ci + 1) * TILE_BLOCK_SIZE, (ri+1/2) * TILE_BLOCK_SIZE),
                                 (ci * TILE_BLOCK_SIZE, (ri + 1) * TILE_BLOCK_SIZE)]
-                    pygame.draw.polygon(screenBuffer, (255, 255, 255), leftWallSpikes)
+                    pygame.draw.polygon(screenBuffer, SPIKE_COLOR, leftWallSpikes)
                 elif tile == 3:
                     tilerect = pygame.Rect((ci * TILE_BLOCK_SIZE, ri * TILE_BLOCK_SIZE),
                                            (TILE_BLOCK_SIZE, TILE_BLOCK_SIZE))
