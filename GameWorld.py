@@ -14,7 +14,7 @@ class GameWorld:
 
         Sound.init()
 
-        Level.currentLevel = Level("level12.txt")
+        Level.currentLevel = Level("level36.txt")
 
         bouncer = Bouncer(Utils.getMiddlePosition(), BALL_RADIUS)
         Bouncer.bouncer = bouncer
@@ -28,7 +28,9 @@ class GameWorld:
         LaserGun.CreateLaserGuns()
 
         Sound.playMainMusic()
-        Sound.playIntroTeleport()
+
+        GameWorld.isEnd = False
+        GameWorld.finished = False
 
     @staticmethod
     def reset():
@@ -43,10 +45,31 @@ class GameWorld:
     def onNextLevel():
         Timer.quit()
         Laser.quit()
+
         exitDoor = ExitDoor(Level.currentLevel.exitdoorPosition, EXIT_DOOR_WIDTH, EXIT_DOOR_HEIGHT)
         ExitDoor.exitDoor = exitDoor
         MovingPlatform.CreateMovingPlatforms()
         LaserGun.CreateLaserGuns()
+
+        Sound.playMainMusic()
+
+    @staticmethod
+    def __finishedCallback():
+        GameWorld.finished = True
+
+    @staticmethod
+    def endGame():
+
+        if GameWorld.isEnd:
+            return None
+
+        bouncer = Bouncer.bouncer
+        bouncer.visible = False
+        GameWorld.isEnd = True
+        bouncer.wonGame = True
+        Sound.playGameEnding()
+
+        Timer.SetTimerEvent(55000, GameWorld.__finishedCallback)
 
     @staticmethod
     def death():
@@ -55,9 +78,9 @@ class GameWorld:
     @staticmethod
     def deathExplode():
         bouncer = Bouncer.bouncer
-        Pixels.CreatePixels(bouncer.position)
+        Pixels.CreatePixels(bouncer.centerPosition)
         GameWorld.death()
-        Sound.platDeathSound()
+        Sound.playDeathSound()
 
     @staticmethod
     def quit():
@@ -98,18 +121,22 @@ class GameWorld:
         bouncer = Bouncer.bouncer
         exitDoorRect = pygame.Rect((exitDoor.position[0],exitDoor.position[1]), (exitDoor.width, exitDoor.height))
         if bouncer.isColliding(exitDoorRect):
-            Level.currentLevel.loadLevel(Level.currentLevel.nextLevel)
-            GameWorld.onNextLevel()
-            GameWorld.reset()
+
+            if Level.currentLevel.lastlevel and not GameWorld.isEnd:
+                GameWorld.endGame()
+            elif not GameWorld.isEnd:
+                Level.currentLevel.loadLevel(Level.currentLevel.nextLevel)
+                GameWorld.onNextLevel()
+                GameWorld.reset()
 
     @staticmethod
     def __update_BouncerBoundariesCheck():
         bouncer = Bouncer.bouncer
-        if bouncer.position[0] - bouncer.boxingRadius <= 0:
-            bouncer.position[0] = bouncer.boxingRadius
-        elif bouncer.position[0] + bouncer.boxingRadius >= SCREEN_WIDTH:
-            bouncer.position[0] = SCREEN_WIDTH - bouncer.boxingRadius
-        elif bouncer.position[1] >= DEATH_LINE_HEIGHT:
+        if bouncer.centerPosition[0] - bouncer.boxingRadius <= 0:
+            bouncer.centerPosition[0] = bouncer.boxingRadius
+        elif bouncer.centerPosition[0] + bouncer.boxingRadius >= SCREEN_WIDTH:
+            bouncer.centerPosition[0] = SCREEN_WIDTH - bouncer.boxingRadius
+        elif bouncer.centerPosition[1] >= DEATH_LINE_HEIGHT:
             GameWorld.death()
 
     @staticmethod
@@ -137,8 +164,6 @@ class GameWorld:
                 if bouncer.isCollidingWithObj(tilerect):
                     collidingTilesList.append((ri,ci,tile,tilerect))
 
-
-        print(collidingTilesList)
         return collidingTilesList
 
     @staticmethod

@@ -38,3 +38,5 @@ level10.txt
 675,450,left
 675,250,right
 675,150,left
+[main_music]
+1

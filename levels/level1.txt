@@ -29,3 +29,5 @@
 700,450
 [next_map]
 level2.txt
+[main_music]
+1

@@ -29,3 +29,5 @@
 700,150
 [next_map]
 level5.txt
+[main_music]
+1

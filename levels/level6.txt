@@ -29,3 +29,5 @@
 700,425
 [next_map]
 level7.txt
+[main_music]
+1

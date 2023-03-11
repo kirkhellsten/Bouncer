@@ -31,4 +31,5 @@
 level15.txt
 [moving_platforms]
 500,382,left
-[other]
+[main_music]
+1

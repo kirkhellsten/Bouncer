@@ -29,3 +29,5 @@
 700,450
 [next_map]
 level3.txt
+[main_music]
+1

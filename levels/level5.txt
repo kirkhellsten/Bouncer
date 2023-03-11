@@ -31,3 +31,5 @@
 level6.txt
 [moving_platforms]
 400,500,right
+[main_music]
+1

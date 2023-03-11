@@ -11,9 +11,13 @@ class Renderer:
 
     @staticmethod
     def __drawBouncer():
+
         bouncer = Bouncer.bouncer
-        pygame.draw.circle(screenBuffer, BOUNCER_COLOR, (int(bouncer.position[0]), int(bouncer.position[1])), bouncer.radius)
-        pygame.gfxdraw.circle(screenBuffer, int(bouncer.position[0]), int(bouncer.position[1]), bouncer.radius, BOUNCER_BORDER_COLOR)
+        if bouncer.visible == False:
+            return None
+
+        pygame.draw.circle(screenBuffer, BOUNCER_COLOR, (int(bouncer.centerPosition[0]), int(bouncer.centerPosition[1])), bouncer.radius)
+        pygame.gfxdraw.circle(screenBuffer, int(bouncer.centerPosition[0]), int(bouncer.centerPosition[1]), bouncer.radius, BOUNCER_BORDER_COLOR)
 
     @staticmethod
     def __drawLevelTiles():
@@ -129,10 +133,23 @@ class Renderer:
             return None
 
     @staticmethod
+    def __drawEndingCredits():
+
+        bouncer = Bouncer.bouncer
+
+        if not bouncer.wonGame:
+            return None
+
+        Utils.dropShadowText(screenBuffer, "The End", 128, 200, 100, (255, 255, 255))
+
+
+    @staticmethod
     def draw():
 
         Renderer.__drawBackground()
         Renderer.__drawPixels()
+
+        Renderer.__drawEndingCredits()
 
         Renderer.__drawLaser()
 

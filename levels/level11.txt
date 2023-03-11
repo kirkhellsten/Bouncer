@@ -31,3 +31,5 @@
 level12.txt
 [moving_platforms]
 225,450,left
+[main_music]
+1

@@ -23,7 +23,7 @@ if __name__ == '__main__':
     screen = pygame.display.set_mode(size)
     pygame.display.set_caption("Bouncer")
 
-    while True:
+    while not GameWorld.finished:
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

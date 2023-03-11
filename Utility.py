@@ -24,7 +24,7 @@ class Utils:
         for tileRow in cl.mapping:
             ci = 0
             for tile in tileRow:
-                if tile == 1 or tile == 2:
+                if tile in [TILE_NORMAL, TILE_GREEN, TILE_RED, TILE_BLACK]:
                     tilerect = pygame.Rect((ci * TILE_BLOCK_SIZE, ri * TILE_BLOCK_SIZE),
                                            (TILE_BLOCK_SIZE, TILE_BLOCK_SIZE))
                     if rect.x < tilerect.x + tilerect.width and rect.y < tilerect.y + tilerect.height \

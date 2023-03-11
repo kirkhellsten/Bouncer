@@ -33,3 +33,5 @@ level8.txt
 400,500,left
 200,350,right
 400,150,left
+[main_music]
+1

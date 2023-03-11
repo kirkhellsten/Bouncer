@@ -16,13 +16,15 @@ class ExitDoor:
 
 class Bouncer:
     def __init__(self, pos, radius):
-        self.position = [pos[0],pos[1]]
+        self.centerPosition = [pos[0],pos[1]]
         self.previousPosition = [pos[0],pos[1]]
         self.speed = [0, 0]
         self.radius = radius
         self.direction = 'none'
         self.boxingRadius = radius - BOXING_DECREMENT
         self.gravityDirection = 'down'
+        self.visible = True
+        self.wonGame = False
 
     def update(self):
 
@@ -34,15 +36,15 @@ class Bouncer:
         elif self.gravityDirection == 'down':
             self.speed[1] += GRAVITY_SPEED
 
-        self.previousPosition[0] = self.position[0]
-        self.previousPosition[1] = self.position[1]
-        self.position[1] += self.speed[1]
+        self.previousPosition[0] = self.centerPosition[0]
+        self.previousPosition[1] = self.centerPosition[1]
+        self.centerPosition[1] += self.speed[1]
 
 
         if self.direction == 'left':
-            self.position[0] -= BOUNCER_H_SPEED
+            self.centerPosition[0] -= BOUNCER_H_SPEED
         elif self.direction == 'right':
-            self.position[0] += BOUNCER_H_SPEED
+            self.centerPosition[0] += BOUNCER_H_SPEED
 
 
     def changeGravityDirection(self):
@@ -58,10 +60,10 @@ class Bouncer:
         Fall back collision detection. More primitive than isCollidingWithObj
     """
     def isColliding(self, rect):
-        if self.position[0] + self.boxingRadius >= rect.x and \
-            self.position[1] + self.boxingRadius >= rect.y and \
-            self.position[0] - self.boxingRadius <= rect.x + rect.width and \
-            self.position[1] - self.boxingRadius <= rect.y + rect.height:
+        if self.centerPosition[0] + self.boxingRadius >= rect.x and \
+            self.centerPosition[1] + self.boxingRadius >= rect.y and \
+            self.centerPosition[0] - self.boxingRadius <= rect.x + rect.width and \
+            self.centerPosition[1] - self.boxingRadius <= rect.y + rect.height:
             return True
         return False
 
@@ -71,13 +73,13 @@ class Bouncer:
     """
     def isCollidingWithObj(self, objRect):
 
-        if self.position[0] + self.boxingRadius >= objRect.x and \
-            self.position[0] - self.boxingRadius <= objRect.x + objRect.width:
+        if self.centerPosition[0] + self.boxingRadius >= objRect.x and \
+            self.centerPosition[0] + self.boxingRadius <= objRect.x + objRect.width:
 
-            if self.position[1] + self.radius*2 > objRect.y and \
-                self.previousPosition[1] + self.radius*2 < objRect.y or \
-                self.position[1] < objRect.y + objRect.height and \
-                self.previousPosition[1] > objRect.y + objRect.height:
+            if self.centerPosition[1] + self.radius > objRect.y and \
+                self.previousPosition[1] + self.radius < objRect.y or \
+                self.centerPosition[1] - self.radius < objRect.y + objRect.height and \
+                self.previousPosition[1] - self.radius > objRect.y + objRect.height:
                 return True
 
         return self.isColliding(objRect)
@@ -106,13 +108,13 @@ class Bouncer:
     def handleBallCollision(self, rectSource):
         ballDir = self.getCollisionDirection(rectSource)
         if ballDir == 'right':
-            self.position[0] = self.getRightPositionForCollision(rectSource)
+            self.centerPosition[0] = self.getRightPositionForCollision(rectSource)
         elif ballDir == 'left':
-            self.position[0] = self.getLeftPositionForCollision(rectSource)
+            self.centerPosition[0] = self.getLeftPositionForCollision(rectSource)
         elif ballDir == 'top':
-            self.position[1] = self.getTopPositionForCollision(rectSource)
+            self.centerPosition[1] = self.getTopPositionForCollision(rectSource)
         elif ballDir == 'bottom':
-            self.position[1] = self.getBottomPositionForCollision(rectSource)
+            self.centerPosition[1] = self.getBottomPositionForCollision(rectSource)
 
     """
         Special method to get direction ball collided with rectSource
@@ -130,8 +132,8 @@ class Bouncer:
             return 'none'
 
     def setPosition(self, pos):
-        self.previousPosition = [self.position[0],self.position[1]]
-        self.position = [pos[0], pos[1]]
+        self.previousPosition = [self.centerPosition[0],self.centerPosition[1]]
+        self.centerPosition = [pos[0], pos[1]]
 
     def setPreviousPosition(self, pos):
         self.previousPosition = [pos[0],pos[1]]

@@ -29,3 +29,5 @@
 725,75
 [next_map]
 level13.txt
+[main_music]
+1

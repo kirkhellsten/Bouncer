@@ -32,3 +32,5 @@
 300,210,left
 [next_map]
 level14.txt
+[main_music]
+1
