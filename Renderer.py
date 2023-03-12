@@ -70,6 +70,72 @@ class Renderer:
                     pygame.draw.rect(screenBuffer, (0,0,0), tilerect)
                     pygame.draw.rect(screenBuffer, (255,255,255), tilerect, TILE_BORDER_WIDTH, TILE_BORDER_RADIUS)
                     pygame.gfxdraw.rectangle(screenBuffer, tilerect, TILE_BORDER_COLOR)
+                elif tile == TILE_RAILTRACK_HORIZONTAL:
+                    pygame.draw.line(screenBuffer, RAILTRACK_COLOR, (ci * TILE_BLOCK_SIZE, (ri+1/2)*TILE_BLOCK_SIZE),
+                                        ((ci + 1) * TILE_BLOCK_SIZE, (ri+1/2)*TILE_BLOCK_SIZE),
+                                        2)
+                elif tile == TILE_RAILTRACK_VERTICAL:
+                    pygame.draw.line(screenBuffer, RAILTRACK_COLOR, ((ci+1/2) * TILE_BLOCK_SIZE, ri*TILE_BLOCK_SIZE),
+                                        ((ci+1/2) * TILE_BLOCK_SIZE, (ri+1)*TILE_BLOCK_SIZE),
+                                        2)
+                elif tile == TILE_RAILTRACK_BOTTOM_LEFT:
+                    pygame.draw.line(screenBuffer, RAILTRACK_COLOR, ((ci+1/2) * TILE_BLOCK_SIZE, (ri+1/2)*TILE_BLOCK_SIZE),
+                                        ((ci+1) * TILE_BLOCK_SIZE, (ri+1/2)*TILE_BLOCK_SIZE),
+                                        2)
+                    pygame.draw.line(screenBuffer, RAILTRACK_COLOR, ((ci+1/2) * TILE_BLOCK_SIZE, ri*TILE_BLOCK_SIZE),
+                                        ((ci+1/2) * TILE_BLOCK_SIZE, (ri+1/2)*TILE_BLOCK_SIZE),
+                                        2)
+                elif tile == TILE_RAILTRACK_TOP_LEFT:
+                    pygame.draw.line(screenBuffer, RAILTRACK_COLOR, ((ci+1/2) * TILE_BLOCK_SIZE, (ri+1/2)*TILE_BLOCK_SIZE),
+                                        ((ci+1) * TILE_BLOCK_SIZE, (ri+1/2)*TILE_BLOCK_SIZE),
+                                        2)
+                    pygame.draw.line(screenBuffer, RAILTRACK_COLOR, ((ci+1/2) * TILE_BLOCK_SIZE, (ri+1/2)*TILE_BLOCK_SIZE),
+                                        ((ci+1/2) * TILE_BLOCK_SIZE, (ri+1)*TILE_BLOCK_SIZE),
+                                        2)
+                elif tile == TILE_RAILTRACK_TOP_RIGHT:
+                    pygame.draw.line(screenBuffer, RAILTRACK_COLOR, (ci * TILE_BLOCK_SIZE, (ri+1/2)*TILE_BLOCK_SIZE),
+                                        ((ci+1/2) * TILE_BLOCK_SIZE, (ri+1/2)*TILE_BLOCK_SIZE),
+                                        2)
+                    pygame.draw.line(screenBuffer, RAILTRACK_COLOR, ((ci+1/2) * TILE_BLOCK_SIZE, (ri+1/2)*TILE_BLOCK_SIZE),
+                                        ((ci+1/2) * TILE_BLOCK_SIZE, (ri+1)*TILE_BLOCK_SIZE),
+                                        2)
+                elif tile == TILE_RAILTRACK_BOTTOM_RIGHT:
+                    pygame.draw.line(screenBuffer, RAILTRACK_COLOR, (ci*TILE_BLOCK_SIZE, (ri+1/2)*TILE_BLOCK_SIZE),
+                                        ((ci+1/2) * TILE_BLOCK_SIZE, (ri+1/2)*TILE_BLOCK_SIZE),
+                                        2)
+                    pygame.draw.line(screenBuffer, RAILTRACK_COLOR,
+                                     ((ci + 1 / 2) * TILE_BLOCK_SIZE, ri * TILE_BLOCK_SIZE),
+                                     ((ci + 1 / 2) * TILE_BLOCK_SIZE, (ri + 1/2) * TILE_BLOCK_SIZE),
+                                     2)
+
+                elif tile == TILE_RAILTRACK_LEFT_STOP:
+                    pygame.draw.line(screenBuffer, RAILTRACK_COLOR, ((ci+1/2)*TILE_BLOCK_SIZE, (ri+1/2)*TILE_BLOCK_SIZE),
+                                        ((ci+1) * TILE_BLOCK_SIZE, (ri+1/2)*TILE_BLOCK_SIZE),
+                                        2)
+                    stoprect = pygame.Rect(( (ci+1/2) * TILE_BLOCK_SIZE - 3, (ri+1/2) * TILE_BLOCK_SIZE - 3),
+                                           (7, 7))
+                    pygame.draw.rect(screenBuffer, RAILTRACK_COLOR, stoprect)
+                elif tile == TILE_RAILTRACK_RIGHT_STOP:
+                    pygame.draw.line(screenBuffer, RAILTRACK_COLOR, (ci*TILE_BLOCK_SIZE, (ri+1/2)*TILE_BLOCK_SIZE),
+                                        ((ci+1/2) * TILE_BLOCK_SIZE, (ri+1/2)*TILE_BLOCK_SIZE),
+                                        2)
+                    stoprect = pygame.Rect(( (ci+1/2) * TILE_BLOCK_SIZE - 3, (ri+1/2) * TILE_BLOCK_SIZE - 3),
+                                           (7, 7))
+                    pygame.draw.rect(screenBuffer, RAILTRACK_COLOR, stoprect)
+                elif tile == TILE_RAILTRACK_TOP_STOP:
+                    pygame.draw.line(screenBuffer, RAILTRACK_COLOR, ((ci+1/2)*TILE_BLOCK_SIZE, (ri+1/2)*TILE_BLOCK_SIZE),
+                                        ((ci+1/2) * TILE_BLOCK_SIZE, (ri+1)*TILE_BLOCK_SIZE),
+                                        2)
+                    stoprect = pygame.Rect(( (ci+1/2) * TILE_BLOCK_SIZE - 3, (ri+1/2) * TILE_BLOCK_SIZE - 3),
+                                           (7, 7))
+                    pygame.draw.rect(screenBuffer, RAILTRACK_COLOR, stoprect)
+                elif tile == TILE_RAILTRACK_BOTTOM_STOP:
+                    pygame.draw.line(screenBuffer, RAILTRACK_COLOR, ((ci+1/2)*TILE_BLOCK_SIZE, ri*TILE_BLOCK_SIZE),
+                                        ((ci+1/2) * TILE_BLOCK_SIZE, (ri+1/2)*TILE_BLOCK_SIZE),
+                                        2)
+                    stoprect = pygame.Rect(( (ci+1/2) * TILE_BLOCK_SIZE - 3, (ri+1/2) * TILE_BLOCK_SIZE - 3),
+                                           (7, 7))
+                    pygame.draw.rect(screenBuffer, RAILTRACK_COLOR, stoprect)
                 ci += 1
             ri += 1
 
@@ -133,6 +199,18 @@ class Renderer:
             return None
 
     @staticmethod
+    def __drawRailSaws():
+        try:
+            railSaws = RailSaw.railSaws
+            for railSaw in railSaws:
+                pygame.draw.circle(screenBuffer, (0,0,0),
+                                   (int(railSaw.centerPosition[0]), int(railSaw.centerPosition[1])), railSaw.radius)
+                pygame.gfxdraw.circle(screenBuffer, int(railSaw.centerPosition[0]), int(railSaw.centerPosition[1]),
+                                      railSaw.radius, (255, 255, 255))
+        except Exception as e:
+            return None
+
+    @staticmethod
     def __drawEndingCredits():
 
         bouncer = Bouncer.bouncer
@@ -154,11 +232,14 @@ class Renderer:
         Renderer.__drawLaser()
 
         Renderer.__drawExitDoor()
-        Renderer.__drawBouncer()
         Renderer.__drawGlowExitDoor()
         Renderer.__drawExitDoorText()
 
         Renderer.__drawMovingPlatforms()
+
+        Renderer.__drawRailSaws()
+        Renderer.__drawBouncer()
+
         Renderer.__drawLevelTiles()
 
         Renderer.__drawLaserGuns()

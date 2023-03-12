@@ -14,7 +14,7 @@ class GameWorld:
 
         Sound.init()
 
-        Level.currentLevel = Level("level36.txt")
+        Level.currentLevel = Level("level26.txt")
 
         bouncer = Bouncer(Utils.getMiddlePosition(), BALL_RADIUS)
         Bouncer.bouncer = bouncer
@@ -26,6 +26,7 @@ class GameWorld:
 
         MovingPlatform.CreateMovingPlatforms()
         LaserGun.CreateLaserGuns()
+        RailSaw.CreateRailSaws()
 
         Sound.playMainMusic()
 
@@ -50,6 +51,7 @@ class GameWorld:
         ExitDoor.exitDoor = exitDoor
         MovingPlatform.CreateMovingPlatforms()
         LaserGun.CreateLaserGuns()
+        RailSaw.CreateRailSaws()
 
         Sound.playMainMusic()
 
@@ -322,8 +324,92 @@ class GameWorld:
                 elif not laser.hitTile:
                     laser.hitTile = True
                     Timer.SetTimerEvent(laser.parent.resetTime, GameWorld.__update_LaserRemove, laser)
-                if bouncer.isCollidingWithObj(laserRect):
+                if bouncer.isCollidingWithoutBoxing(laserRect):
                     GameWorld.deathExplode()
+        except Exception as e:
+            return None
+
+    @staticmethod
+    def __update_RailSaws():
+        bouncer = Bouncer.bouncer
+        try:
+            railSaws = RailSaw.railSaws
+
+            for railSaw in railSaws:
+                railSaw.update()
+                railRect = pygame.Rect((railSaw.centerPosition[0]-1, railSaw.centerPosition[1]-1), (2, 2))
+                railCollisionRect = pygame.Rect((railSaw.centerPosition[0]-RAILSAW_RADIUS, railSaw.centerPosition[1]-RAILSAW_RADIUS),
+                                                (RAILSAW_RADIUS*2, RAILSAW_RADIUS*2))
+                if bouncer.isCollidingWithObj(railCollisionRect):
+                    GameWorld.deathExplode()
+                    break
+
+                """
+                    Check if rail saw is colliding with railtracks
+                """
+                cl = Level.currentLevel
+                ri = 0
+                for tileRow in cl.mapping:
+                    ci = 0
+                    for tile in tileRow:
+                        if tile in TILES_RAILTRACK_SYSTEM:
+                            tilerect = pygame.Rect(( (ci+1/2) * TILE_BLOCK_SIZE-1, (ri+1/2)*TILE_BLOCK_SIZE-1),
+                                                   (3, 3))
+                            if railRect.x < tilerect.x + tilerect.width and \
+                                    railRect.y < tilerect.y + tilerect.height and \
+                                    railRect.x + railRect.width > tilerect.x and railRect.y + railRect.height > tilerect.y:
+
+                                if tile == TILE_RAILTRACK_LEFT_STOP:
+
+                                    if railSaw.direction == 'left':
+                                        railSaw.direction = 'right'
+
+                                elif tile == TILE_RAILTRACK_RIGHT_STOP:
+
+
+                                    if railSaw.direction == 'right':
+                                        railSaw.direction = 'left'
+                                elif tile == TILE_RAILTRACK_TOP_STOP:
+
+                                    if railSaw.direction == 'up':
+                                        railSaw.direction = 'down'
+                                elif tile == TILE_RAILTRACK_BOTTOM_STOP:
+
+                                    if railSaw.direction == 'down':
+                                        railSaw.direction = 'up'
+
+                                elif tile == TILE_RAILTRACK_BOTTOM_RIGHT:
+
+                                    if railSaw.direction == 'right':
+                                        railSaw.direction = 'up'
+                                    elif railSaw.direction == 'down':
+                                        railSaw.direction = 'left'
+
+                                elif tile == TILE_RAILTRACK_TOP_RIGHT:
+
+                                    if railSaw.direction == 'up':
+                                        railSaw.direction = 'left'
+                                    elif railSaw.direction == 'right':
+                                        railSaw.direction = 'down'
+
+                                elif tile == TILE_RAILTRACK_TOP_LEFT:
+
+                                    if railSaw.direction == 'left':
+                                        railSaw.direction = 'down'
+                                    elif railSaw.direction == 'up':
+                                        railSaw.direction = 'right'
+
+                                elif tile == TILE_RAILTRACK_BOTTOM_LEFT:
+
+                                    if railSaw.direction == 'down':
+                                        railSaw.direction = 'right'
+                                    elif railSaw.direction == 'left':
+                                        railSaw.direction = 'up'
+
+                        ci += 1
+                    ri += 1
+
+
         except Exception as e:
             return None
 
@@ -343,6 +429,7 @@ class GameWorld:
 
         GameWorld.__update_BoucerCheckTiles()
 
+        GameWorld.__update_RailSaws()
 
         GameWorld.__update_Laser()
         GameWorld.__update_Pixels()

@@ -28,7 +28,7 @@
 [exitdoor_position]
 725,175
 [next_map]
-level36.txt
+level37.txt
 [laser_guns]
 675,130,1000,3000,left
 555,25,1500,800,down

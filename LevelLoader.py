@@ -18,6 +18,7 @@ class Level:
         self.laserGunTimers = []
         self.laserGunDirection = 'none'
         self.laserGunData = []
+        self.railSawsData = []
         self.lastlevel = False
 
         for line in f:
@@ -42,6 +43,8 @@ class Level:
                 parseSector = "main_music"
             elif line == "[lastlevel]":
                 parseSector = "lastlevel"
+            elif line == "[rail_saws]":
+                parseSector = "rail_saws"
 
             if line.find("[") != -1 and line.find("]") != -1:
                 continue
@@ -77,3 +80,7 @@ class Level:
             elif parseSector == "main_music":
                 dataTokens = [int(line)]
                 self.main_music = dataTokens[0]
+            elif parseSector == "rail_saws":
+                dataTokens = line.split(",")
+                self.railSawsData.append([int(dataTokens[0]), int(dataTokens[1]), dataTokens[2]])
+

@@ -14,6 +14,36 @@ class ExitDoor:
     def setPosition(self, pos):
         self.position = [pos[0], pos[1]]
 
+class RailSaw:
+    def __init__(self, centerPos, direction):
+        self.centerPosition = [centerPos[0],centerPos[1]]
+        self.direction = direction
+        self.width = RAILSAW_WIDTH
+        self.height = RAILSAW_HEIGHT
+        self.angle = 0
+        self.radius = RAILSAW_RADIUS
+
+    @staticmethod
+    def CreateRailSaws():
+        RailSaw.railSaws = []
+        railSaws = RailSaw.railSaws
+        data = Level.currentLevel.railSawsData
+
+        for m in data:
+            position = [m[0],m[1]]
+            direction = m[2]
+            railSaws.append(RailSaw(position, direction))
+
+    def update(self):
+        if self.direction == 'right':
+            self.centerPosition[0] += RAILSAW_SPEED
+        elif self.direction == 'up':
+            self.centerPosition[1] -= RAILSAW_SPEED
+        elif self.direction == 'left':
+            self.centerPosition[0] -= RAILSAW_SPEED
+        elif self.direction == 'down':
+            self.centerPosition[1] += RAILSAW_SPEED
+
 class Bouncer:
     def __init__(self, pos, radius):
         self.centerPosition = [pos[0],pos[1]]
@@ -55,6 +85,17 @@ class Bouncer:
             self.gravityDirection = 'down'
 
         self.speed[1] = 0
+
+    """
+        Collision detection using normal radius
+    """
+    def isCollidingWithoutBoxing(self, rect):
+        if self.centerPosition[0] + self.radius >= rect.x and \
+            self.centerPosition[1] + self.radius >= rect.y and \
+            self.centerPosition[0] - self.radius <= rect.x + rect.width and \
+            self.centerPosition[1] - self.radius <= rect.y + rect.height:
+            return True
+        return False
 
     """
         Fall back collision detection. More primitive than isCollidingWithObj
