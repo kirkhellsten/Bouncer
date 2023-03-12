@@ -38,5 +38,6 @@ level26.txt
 587,448,down
 687,487,right
 487,337,left
-437,212,right
+237,212,right
+637,212,right
 100,188,right

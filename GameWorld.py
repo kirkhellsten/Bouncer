@@ -14,7 +14,7 @@ class GameWorld:
 
         Sound.init()
 
-        Level.currentLevel = Level("level26.txt")
+        Level.currentLevel = Level("level27.txt")
 
         bouncer = Bouncer(Utils.getMiddlePosition(), BALL_RADIUS)
         Bouncer.bouncer = bouncer
@@ -360,47 +360,29 @@ class GameWorld:
                                     railRect.x + railRect.width > tilerect.x and railRect.y + railRect.height > tilerect.y:
 
                                 if tile == TILE_RAILTRACK_LEFT_STOP:
-
-                                    if railSaw.direction == 'left':
-                                        railSaw.direction = 'right'
-
+                                    railSaw.direction = 'right'
                                 elif tile == TILE_RAILTRACK_RIGHT_STOP:
-
-
-                                    if railSaw.direction == 'right':
-                                        railSaw.direction = 'left'
+                                    railSaw.direction = 'left'
                                 elif tile == TILE_RAILTRACK_TOP_STOP:
-
-                                    if railSaw.direction == 'up':
-                                        railSaw.direction = 'down'
+                                    railSaw.direction = 'down'
                                 elif tile == TILE_RAILTRACK_BOTTOM_STOP:
-
-                                    if railSaw.direction == 'down':
-                                        railSaw.direction = 'up'
-
+                                    railSaw.direction = 'up'
                                 elif tile == TILE_RAILTRACK_BOTTOM_RIGHT:
-
                                     if railSaw.direction == 'right':
                                         railSaw.direction = 'up'
                                     elif railSaw.direction == 'down':
                                         railSaw.direction = 'left'
-
                                 elif tile == TILE_RAILTRACK_TOP_RIGHT:
-
                                     if railSaw.direction == 'up':
                                         railSaw.direction = 'left'
                                     elif railSaw.direction == 'right':
                                         railSaw.direction = 'down'
-
                                 elif tile == TILE_RAILTRACK_TOP_LEFT:
-
                                     if railSaw.direction == 'left':
                                         railSaw.direction = 'down'
                                     elif railSaw.direction == 'up':
                                         railSaw.direction = 'right'
-
                                 elif tile == TILE_RAILTRACK_BOTTOM_LEFT:
-
                                     if railSaw.direction == 'down':
                                         railSaw.direction = 'right'
                                     elif railSaw.direction == 'left':
