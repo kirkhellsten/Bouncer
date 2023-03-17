@@ -104,7 +104,6 @@ class Sound:
 
             Sound.playIntroTeleport3()
 
-
             pygame.mixer.Sound.play(Sound.SND_MAIN_MUSIC_3, -1)
             Sound.SND_MAIN_MUSIC_3.set_volume(0.7)
 

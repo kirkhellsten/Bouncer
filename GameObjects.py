@@ -216,6 +216,14 @@ class MovingPlatform:
         elif self.direction == 'down':
             self.position[1] += MOVING_PLATFORM_V_SPEED
 
+class AutoTurret:
+    def __init__(self, pos):
+        self.position = [pos[0],pos[1]]
+
+class AutoTurretShot:
+    def __init__(self, pos, parent):
+        self.position = [pos[0],pos[1]]
+        self.parent = parent
 
 class Laser:
     def __init__(self, pos, parent):

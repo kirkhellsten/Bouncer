@@ -14,7 +14,7 @@ class GameWorld:
 
         Sound.init()
 
-        Level.currentLevel = Level("level27.txt")
+        Level.currentLevel = Level("level39.txt")
 
         bouncer = Bouncer(Utils.getMiddlePosition(), BALL_RADIUS)
         Bouncer.bouncer = bouncer
@@ -97,7 +97,7 @@ class GameWorld:
             for tileRow in cl.mapping:
                 ci = 0
                 for tile in tileRow:
-                    if tile == TILE_NORMAL or tile == TILE_RED or tile == TILE_GREEN:
+                    if tile in TILES_WITH_COLLISIONS:
                         tilerect = pygame.Rect((ci * TILE_BLOCK_SIZE, ri * TILE_BLOCK_SIZE),
                                                (TILE_BLOCK_SIZE, TILE_BLOCK_SIZE))
                         if platform.isColliding(tilerect):
@@ -139,6 +139,8 @@ class GameWorld:
         elif bouncer.centerPosition[0] + bouncer.boxingRadius >= SCREEN_WIDTH:
             bouncer.centerPosition[0] = SCREEN_WIDTH - bouncer.boxingRadius
         elif bouncer.centerPosition[1] >= DEATH_LINE_HEIGHT:
+            GameWorld.death()
+        elif bouncer.centerPosition[1] <= DEATH_LINE_HEIGHT_CEIL - bouncer.boxingRadius:
             GameWorld.death()
 
     @staticmethod
@@ -192,7 +194,8 @@ class GameWorld:
                 if ballDir in ['left', 'right']:
                     bouncer.speed[0] = 0
 
-                if ballDir == 'bottom':
+                if ballDir == 'bottom' and bouncer.gravityDirection == 'down' or \
+                    ballDir == 'top' and bouncer.gravityDirection == 'up':
                     bouncer.speed[1] = 0
 
                 """
@@ -337,7 +340,7 @@ class GameWorld:
 
             for railSaw in railSaws:
                 railSaw.update()
-                railRect = pygame.Rect((railSaw.centerPosition[0]-1, railSaw.centerPosition[1]-1), (2, 2))
+                railRect = pygame.Rect((railSaw.centerPosition[0]-1, railSaw.centerPosition[1]-1), (3, 3))
                 railCollisionRect = pygame.Rect((railSaw.centerPosition[0]-RAILSAW_RADIUS, railSaw.centerPosition[1]-RAILSAW_RADIUS),
                                                 (RAILSAW_RADIUS*2, RAILSAW_RADIUS*2))
                 if bouncer.isCollidingWithObj(railCollisionRect):
