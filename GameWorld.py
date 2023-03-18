@@ -14,7 +14,7 @@ class GameWorld:
 
         Sound.init()
 
-        Level.currentLevel = Level("level39.txt")
+        Level.currentLevel = Level("level1.txt")
 
         bouncer = Bouncer(Utils.getMiddlePosition(), BALL_RADIUS)
         Bouncer.bouncer = bouncer

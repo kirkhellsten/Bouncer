@@ -69,6 +69,7 @@ RAILSAW_RADIUS = 8
 RAILSAW_SPEED = 4
 RAIL_BOXING = 5
 
+FADEOUT_ALPHA_SPEED = 1
 
 """
     Bouncer Constants

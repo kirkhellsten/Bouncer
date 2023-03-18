@@ -11,19 +11,22 @@ from Timer import *
 from Controls import *
 from Renderer import *
 from GameWorld import *
+from SceneModule import *
 
 if __name__ == '__main__':
 
     pygame.init()
     Timer.init()
-    GameWorld.init()
+
+    Scene.CreateScenes()
+    SceneManager.CreateSceneManager()
 
     size = width, height = SCREEN_WIDTH, SCREEN_HEIGHT
 
     screen = pygame.display.set_mode(size)
     pygame.display.set_caption("Bouncer")
 
-    while not GameWorld.finished:
+    while SceneManager.sceneManager.getCurrentStatus() == "running":
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -40,10 +43,12 @@ if __name__ == '__main__':
                         timer_callback(args)
 
         keys = pygame.key.get_pressed()
-        Controls.key_pressed(keys)
-
-        GameWorld.update()
-        Renderer.draw()
+        SceneManager.sceneManager.triggerSceneControls(keys)
+        SceneManager.sceneManager.triggerSceneUpdate()
+        SceneManager.sceneManager.triggerSceneRender()
+        currentScene = SceneManager.sceneManager.getCurrentScene()
+        sceneBuffer = currentScene.getBuffer()
+        pygame.Surface.blit(screenBuffer, sceneBuffer, (0, 0))
         pygame.Surface.blit(screen, screenBuffer, (0,0))
         pygame.display.flip()
 
