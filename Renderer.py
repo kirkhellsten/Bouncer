@@ -205,7 +205,7 @@ class Renderer:
             for railSaw in railSaws:
                 pygame.draw.circle(buffer, (0,0,0),
                                    (int(railSaw.centerPosition[0]), int(railSaw.centerPosition[1])), railSaw.radius)
-                pygame.gfxdraw.circle(screenBuffer, int(railSaw.centerPosition[0]), int(railSaw.centerPosition[1]),
+                pygame.gfxdraw.circle(buffer, int(railSaw.centerPosition[0]), int(railSaw.centerPosition[1]),
                                       railSaw.radius, (255, 255, 255))
         except Exception as e:
             return None

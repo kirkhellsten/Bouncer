@@ -19,7 +19,7 @@ class SceneManager:
         SceneManager.sceneManager.addScene(Scene.splashScene)
         SceneManager.sceneManager.addScene(Scene.mainMenuScene)
         SceneManager.sceneManager.addScene(Scene.playScene)
-        SceneManager.sceneManager.setCurrentScene(Scene.splashScene.getId())
+        SceneManager.sceneManager.setCurrentScene(Scene.playScene.getId())
 
     def addScene(self, scene):
         SceneManager.scenes[scene.getId()] = scene
@@ -55,7 +55,7 @@ class SceneManager:
 
     def transitionToScene(self, id):
         self.sceneStatus = "fadeout"
-        Timer.SetTimerEvent(1300, self.__triggerSceneTransition, id)
+        Timer.SetTimerEvent(1500, self.__triggerSceneTransition, id)
 
     def triggerSceneControls(self, keys):
         self.currentScene.controls(keys)

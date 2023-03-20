@@ -39,6 +39,6 @@
 [laser_guns]
 605,450,1000,3000,up
 [next_map]
-level40.txt
+level41.txt
 [main_music]
 3

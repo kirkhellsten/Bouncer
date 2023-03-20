@@ -14,7 +14,7 @@ class GameWorld:
 
         Sound.init()
 
-        Level.currentLevel = Level("level1.txt")
+        Level.currentLevel = Level("level43.txt")
 
         bouncer = Bouncer(Utils.getMiddlePosition(), BALL_RADIUS)
         Bouncer.bouncer = bouncer
@@ -358,9 +358,9 @@ class GameWorld:
                         if tile in TILES_RAILTRACK_SYSTEM:
                             tilerect = pygame.Rect(( (ci+1/2) * TILE_BLOCK_SIZE-1, (ri+1/2)*TILE_BLOCK_SIZE-1),
                                                    (3, 3))
-                            if railRect.x < tilerect.x + tilerect.width and \
-                                    railRect.y < tilerect.y + tilerect.height and \
-                                    railRect.x + railRect.width > tilerect.x and railRect.y + railRect.height > tilerect.y:
+                            if railRect.x <= tilerect.x + tilerect.width and \
+                                    railRect.y <= tilerect.y + tilerect.height and \
+                                    railRect.x + railRect.width >= tilerect.x and railRect.y + railRect.height >= tilerect.y:
 
                                 if tile == TILE_RAILTRACK_LEFT_STOP:
                                     railSaw.direction = 'right'
