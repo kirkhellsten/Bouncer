@@ -7,18 +7,18 @@ class Sound:
     @staticmethod
     def init():
 
-        Sound.SND_LASER_GUN_SOUND = pygame.mixer.Sound("laser-gun-sound.wav")
+        Sound.SND_LASER_GUN_SOUND = pygame.mixer.Sound("sounds/laser-gun-sound.wav")
 
-        Sound.SND_MAIN_MUSIC = pygame.mixer.Sound("main-music.mp3")
-        Sound.SND_MAIN_MUSIC_2 = pygame.mixer.Sound("main-music-2.mp3")
-        Sound.SND_MAIN_MUSIC_3 = pygame.mixer.Sound("main-music-3.mp3")
-        Sound.SND_INTRO_TELEPORT = pygame.mixer.Sound("intro-teleport.mp3")
-        Sound.SND_INTRO_TELEPORT_2 = pygame.mixer.Sound("intro-teleport-2.mp3")
-        Sound.SND_INTRO_TELEPORT_3 = pygame.mixer.Sound("intro-teleport-3.wav")
+        Sound.SND_MAIN_MUSIC = pygame.mixer.Sound("sounds/main-music.mp3")
+        Sound.SND_MAIN_MUSIC_2 = pygame.mixer.Sound("sounds/main-music-2.mp3")
+        Sound.SND_MAIN_MUSIC_3 = pygame.mixer.Sound("sounds/main-music-3.mp3")
+        Sound.SND_INTRO_TELEPORT = pygame.mixer.Sound("sounds/intro-teleport.mp3")
+        Sound.SND_INTRO_TELEPORT_2 = pygame.mixer.Sound("sounds/intro-teleport-2.mp3")
+        Sound.SND_INTRO_TELEPORT_3 = pygame.mixer.Sound("sounds/intro-teleport-3.wav")
 
-        Sound.SND_GAME_ENDING = pygame.mixer.Sound("game-ending.wav")
+        Sound.SND_GAME_ENDING = pygame.mixer.Sound("sounds/game-ending.wav")
 
-        Sound.SND_DEATH_SOUND = pygame.mixer.Sound("death-sound.mp3")
+        Sound.SND_DEATH_SOUND = pygame.mixer.Sound("sounds/death-sound.mp3")
 
         Sound.currentMainMusic = 'none'
 
