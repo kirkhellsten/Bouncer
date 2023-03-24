@@ -14,7 +14,7 @@ class GameWorld:
 
         Sound.init()
 
-        Level.currentLevel = Level("level43.txt")
+        Level.currentLevel = Level("level1.txt")
 
         bouncer = Bouncer(Utils.getMiddlePosition(), BALL_RADIUS)
         Bouncer.bouncer = bouncer
@@ -327,7 +327,7 @@ class GameWorld:
                 elif not laser.hitTile:
                     laser.hitTile = True
                     Timer.SetTimerEvent(laser.parent.resetTime, GameWorld.__update_LaserRemove, laser)
-                if bouncer.isCollidingWithoutBoxing(laserRect):
+                if bouncer.isCollidingWithObj(laserRect):
                     GameWorld.deathExplode()
         except Exception as e:
             return None

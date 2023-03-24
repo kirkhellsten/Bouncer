@@ -75,6 +75,11 @@ class Sound:
     @staticmethod
     def playMainMusic():
 
+        if Level.currentLevel.main_music == 0:
+            Sound.SND_MAIN_MUSIC.stop()
+            Sound.SND_MAIN_MUSIC_2.stop()
+            Sound.SND_MAIN_MUSIC_3.stop()
+
         if Sound.currentMainMusic != 1 and Level.currentLevel.main_music == 1:
 
             Sound.SND_MAIN_MUSIC_3.stop()
