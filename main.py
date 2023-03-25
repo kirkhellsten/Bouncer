@@ -31,6 +31,9 @@ if __name__ == '__main__':
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
+            if event.type == pygame.KEYDOWN:
+                eventKeyDown = event.key
+                SceneManager.sceneManager.triggerSceneControls(keydown=eventKeyDown)
 
             for i in range(len(Timer.events)):
                 timer_event = Timer.events[i]

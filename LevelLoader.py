@@ -1,10 +1,13 @@
 
+
 class Level:
+
     def __init__(self, filepath):
         self.loadLevel(filepath)
 
     def loadLevel(self, levelFileName):
         self.loadFile("levels/" + levelFileName)
+        self.levelFilename = levelFileName
 
     def loadFile(self, filepath):
 

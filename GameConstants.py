@@ -71,6 +71,8 @@ RAIL_BOXING = 5
 
 FADEOUT_ALPHA_SPEED = 1
 
+MAIN_MENU_TEXT_COLOR = (255, 255, 255)
+
 """
     Bouncer Constants
 """

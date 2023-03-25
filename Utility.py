@@ -8,6 +8,13 @@ import cv2
 class Utils:
 
     @staticmethod
+    def writeDictToFile(dict, filename):
+        f = open(filename, "w")
+        for key in dict:
+            f.write(f"{key}={str(dict[key])}\n")
+        f.close()
+
+    @staticmethod
     def getMiddlePosition():
         return [int((SCREEN_WIDTH / 2)), int((SCREEN_HEIGHT / 2))]
 

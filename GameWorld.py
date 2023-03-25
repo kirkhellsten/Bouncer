@@ -14,7 +14,12 @@ class GameWorld:
 
         Sound.init()
 
-        Level.currentLevel = Level("level1.txt")
+        d = {k: v.replace("\n","") for k, v in (l.split('=') for l in open("save.txt"))}
+        saveFileDictionary = d
+        currentLevel = Level(saveFileDictionary['resumeLevel'])
+        GameWorld.saveFileDictionary = saveFileDictionary
+
+        Level.currentLevel = currentLevel
 
         bouncer = Bouncer(Utils.getMiddlePosition(), BALL_RADIUS)
         Bouncer.bouncer = bouncer
@@ -54,6 +59,9 @@ class GameWorld:
         RailSaw.CreateRailSaws()
 
         Sound.playMainMusic()
+
+        GameWorld.saveFileDictionary["resumeLevel"] = Level.currentLevel.levelFilename
+        Utils.writeDictToFile(GameWorld.saveFileDictionary, "save.txt")
 
     @staticmethod
     def __finishedCallback():
@@ -127,9 +135,11 @@ class GameWorld:
             if Level.currentLevel.lastlevel and not GameWorld.isEnd:
                 GameWorld.endGame()
             elif not GameWorld.isEnd:
+
                 Level.currentLevel.loadLevel(Level.currentLevel.nextLevel)
                 GameWorld.onNextLevel()
                 GameWorld.reset()
+
 
     @staticmethod
     def __update_BouncerBoundariesCheck():
